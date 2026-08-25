@@ -1,41 +1,27 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
+import healthRoutes from "./routes/healthRoutes.js";
+import notFoundMiddleware from "./middleware/notFoundMiddleware.js";
+import errorMiddleware from "./middleware/errorMiddleware.js";
 
 const app = express();
 
-// Middleware
 app.use(express.json());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: "http://localhost:5173",
   })
 );
 
-// API health check
-app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "API is running",
-  });
-});
+// Routes
+app.use("/api/health", healthRoutes);
 
-// Database health check
-app.get("/api/health/db", (req, res) => {
-  const state = mongoose.connection.readyState;
+// 404 handler
+app.use(notFoundMiddleware);
 
-  if (state === 1) {
-    return res.json({
-      success: true,
-      message: "Database connection is working",
-    });
-  }
-
-  return res.status(500).json({
-    success: false,
-    message: "Database is not connected",
-  });
-});
+// Centralized error handler
+app.use(errorMiddleware);
 
 export default app;
