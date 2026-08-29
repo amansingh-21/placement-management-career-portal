@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import healthRoutes from "./routes/healthRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import notFoundMiddleware from "./middleware/notFoundMiddleware.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
 
@@ -17,6 +18,7 @@ app.use(
 
 // Routes
 app.use("/api/health", healthRoutes);
+app.use("/api/auth", authRoutes);
 
 // 404 handler
 app.use(notFoundMiddleware);
