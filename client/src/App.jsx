@@ -1,32 +1,48 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { Navigate, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register.jsx";
+import Unauthorized from "./pages/auth/Unauthorized.jsx";
+import StudentDashboard from "./pages/student/Dashboard.jsx";
+import RecruiterDashboard from "./pages/recruiter/Dashboard.jsx";
+import AdminDashboard from "./pages/admin/Dashboard.jsx";
 
-function App() {
-  const [message, setMessage] = useState("Checking backend...");
-
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/health");
-
-        setMessage(response.data.message);
-      } catch (error) {
-        console.error("Backend connection failed:", error);
-        setMessage("Backend connection failed");
-      }
-    };
-
-    checkBackend();
-  }, []);
-
+const App = () => {
   return (
-    <div>
-      <h1>Placement Management & Career Portal</h1>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route
+        path="/student/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-      <p>Backend Status:</p>
+      <Route
+        path="/recruiter/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+            <RecruiterDashboard />
+          </ProtectedRoute>
+        }
+      />
 
-      <strong>{message}</strong>
-    </div>
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
 
