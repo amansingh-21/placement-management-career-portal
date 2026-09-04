@@ -15,6 +15,11 @@ const studentProfileSchema = new mongoose.Schema(
       trim: true,
     },
 
+    graduationYear: {
+      type: Number,
+      required: true,
+    },
+
     cgpa: {
       type: Number,
       required: true,
@@ -33,13 +38,46 @@ const studentProfileSchema = new mongoose.Schema(
       default: [],
     },
 
-    projects: {
-      type: [String],
-      default: [],
-    },
+    projects: [
+      {
+        title: {
+          type: String,
+          trim: true,
+        },
+
+        description: {
+          type: String,
+          trim: true,
+        },
+
+        technologies: {
+          type: [String],
+          default: [],
+        },
+      },
+    ],
 
     certifications: {
-      type: [String],
+      type: [
+        {
+          name: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+    
+          issuer: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+    
+          year: {
+            type: Number,
+            required: true,
+          },
+        },
+      ],
       default: [],
     },
 
@@ -47,6 +85,13 @@ const studentProfileSchema = new mongoose.Schema(
       type: String,
       default: null,
       trim: true,
+    },
+
+    profileCompletion: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
     },
   },
   {

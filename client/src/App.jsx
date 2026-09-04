@@ -6,6 +6,7 @@ import Unauthorized from "./pages/auth/Unauthorized.jsx";
 import StudentDashboard from "./pages/student/Dashboard.jsx";
 import RecruiterDashboard from "./pages/recruiter/Dashboard.jsx";
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
+import StudentProfile from "./pages/student/Profile.jsx";
 
 const App = () => {
   return (
@@ -19,6 +20,15 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["STUDENT"]}>
             <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/profile"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentProfile />
           </ProtectedRoute>
         }
       />
