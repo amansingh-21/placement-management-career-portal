@@ -1,14 +1,17 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+
 import healthRoutes from "./routes/healthRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
+import companyRoutes from "./routes/companyRoutes.js";
 import recruiterRoutes from "./routes/recruiterRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+
 import notFoundMiddleware from "./middleware/notFoundMiddleware.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
-import companyRoutes from "./routes/companyRoutes.js";
 
 const app = express();
 
@@ -25,9 +28,10 @@ app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/company", companyRoutes);
+app.use("/api/recruiters", recruiterRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/uploads", express.static("uploads"));
-app.use("/api/recruiters", recruiterRoutes);
 
 // 404 handler
 app.use(notFoundMiddleware);
