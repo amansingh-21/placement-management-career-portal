@@ -7,6 +7,7 @@ import StudentDashboard from "./pages/student/Dashboard.jsx";
 import RecruiterDashboard from "./pages/recruiter/Dashboard.jsx";
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
 import StudentProfile from "./pages/student/Profile.jsx";
+import CompanyProfile from "./pages/recruiter/CompanyProfile.jsx";
 
 const App = () => {
   return (
@@ -38,6 +39,15 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["RECRUITER"]}>
             <RecruiterDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recruiter/company"
+        element={
+          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+            <CompanyProfile />
           </ProtectedRoute>
         }
       />

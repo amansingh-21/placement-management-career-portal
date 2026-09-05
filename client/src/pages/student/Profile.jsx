@@ -250,36 +250,34 @@ const Profile = () => {
     setError("");
     setSuccess("");
 
-  if (!resumeFile) {
-    setError("Please select a resume.");
-    return;
-  }
+    if (!resumeFile) {
+      setError("Please select a resume.");
+      return;
+    }
 
-  try {
-    setResumeUploading(true);
+    try {
+      setResumeUploading(true);
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    formData.append("resume", resumeFile);
+      formData.append("resume", resumeFile);
 
-    const data = await uploadResume(formData);
+      const data = await uploadResume(formData);
 
-    setProfile(data);
+      setProfile(data);
 
-    setResumeFile(null);
+      setResumeFile(null);
 
-    setSuccess(
-      "Resume uploaded successfully."
-    );
-  } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      "Unable to upload your resume.";
+      setSuccess("Resume uploaded successfully.");
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "Unable to upload your resume.";
 
-    setError(message);
-  } finally {
-    setResumeUploading(false);
-  }
+      setError(message);
+    } finally {
+      setResumeUploading(false);
+    }
   };
 
   const handleProjectsSave = async () => {
@@ -703,39 +701,37 @@ const Profile = () => {
           </ProfileSection>
 
           <ProfileSection title="Resume">
-  <div>
-    <label htmlFor="resume">
-      Upload Resume
-    </label>
+            <div>
+              <label htmlFor="resume">
+                Upload Resume
+              </label>
 
-    <br />
+              <br />
 
-    <input
-      id="resume"
-      type="file"
-      accept=".pdf,.doc,.docx"
-      onChange={handleResumeChange}
-    />
-  </div>
+              <input
+                id="resume"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleResumeChange}
+              />
+            </div>
 
-  <br />
+            <br />
 
-  {resumeFile && (
-    <p>
-      Selected file: {resumeFile.name}
-    </p>
-  )}
+            {resumeFile && (
+              <p>
+                Selected file: {resumeFile.name}
+              </p>
+            )}
 
-  <button
-    type="button"
-    onClick={handleResumeUpload}
-    disabled={resumeUploading}
-  >
-    {resumeUploading
-      ? "Uploading..."
-      : "Upload Resume"}
-  </button>
-</ProfileSection>
+            <button
+              type="button"
+              onClick={handleResumeUpload}
+              disabled={resumeUploading}
+            >
+              {resumeUploading ? "Uploading..." : "Upload Resume"}
+            </button>
+          </ProfileSection>
 
           {success && (
             <p>{success}</p>

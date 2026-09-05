@@ -23,6 +23,14 @@ const Navbar = () => {
           </span>
         )}
 
+        {user?.role === "RECRUITER" && (
+          <button
+            onClick={() => navigate("/recruiter/company")}
+          >
+            Company Profile
+          </button>
+        )}
+
         <button onClick={handleLogout}>
           Logout
         </button>
