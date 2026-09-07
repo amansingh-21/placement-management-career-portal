@@ -10,18 +10,7 @@ import { roleMiddleware } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-router.get(
-  "/companies",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  listCompanies
-);
-
-router.put(
-  "/companies/:id/approval",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  setCompanyApproval
-);
+router.get("/companies", authMiddleware, roleMiddleware("ADMIN"), listCompanies);
+router.put("/companies/:id/approval", authMiddleware, roleMiddleware("ADMIN"), setCompanyApproval);
 
 export default router;

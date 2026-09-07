@@ -10,6 +10,15 @@ import StudentProfile from "./pages/student/Profile.jsx";
 import CompanyProfile from "./pages/recruiter/CompanyProfile.jsx";
 import AdminCompanies from "./pages/admin/Companies.jsx";
 
+import StudentJobs from "./pages/student/Jobs.jsx";
+import StudentJobDetails from "./pages/student/JobDetails.jsx";
+
+import ManageJobs from "./pages/recruiter/ManageJobs.jsx";
+import CreateJob from "./pages/recruiter/CreateJob.jsx";
+import EditJob from "./pages/recruiter/EditJob.jsx";
+
+import AdminJobs from "./pages/admin/Jobs.jsx";
+
 const App = () => {
   return (
     <Routes>
@@ -67,6 +76,60 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminCompanies />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/jobs"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentJobs />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/jobs/:id"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentJobDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recruiter/jobs"
+        element={
+          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+            <ManageJobs />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recruiter/jobs/create"
+        element={
+          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+            <CreateJob />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recruiter/jobs/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+            <EditJob />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/jobs"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminJobs />
           </ProtectedRoute>
         }
       />

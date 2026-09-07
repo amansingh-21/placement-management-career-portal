@@ -10,13 +10,8 @@ import { roleMiddleware } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
-router.use(
-  authMiddleware,
-  roleMiddleware("RECRUITER")
-);
-
+router.use(authMiddleware, roleMiddleware("RECRUITER"));
 router.get("/me", getMe);
-
 router.put("/me", updateMe);
 
 export default router;
