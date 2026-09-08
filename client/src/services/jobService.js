@@ -14,6 +14,14 @@ export const getJobById = async (jobId) => {
   return response.data.data.job;
 };
 
+export const getEligibility = async (jobId) => {
+  const response = await api.get(
+    `/jobs/${jobId}/eligibility`
+  );
+
+  return response.data.data;
+};
+
 export const getMyJobs = async () => {
   const response = await api.get("/jobs/my");
 

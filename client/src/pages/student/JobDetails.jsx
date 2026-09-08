@@ -2,19 +2,37 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import Navbar from "../../components/Navbar.jsx";
-import { getJobById } from "../../services/jobService.js";
+import EligibilityResult from "../../components/EligibilityResult.jsx";
+
+import {
+  getJobById,
+  getEligibility,
+} from "../../services/jobService.js";
 
 const JobDetails = () => {
   const { id } = useParams();
 
   const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [eligibility, setEligibility] =
+    useState(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [eligibilityLoading, setEligibilityLoading] =
+    useState(false);
+
   const [error, setError] = useState("");
+
+  const [eligibilityError, setEligibilityError] =
+    useState("");
 
   useEffect(() => {
     const fetchJob = async () => {
       try {
         setLoading(true);
+        setError("");
 
         const data = await getJobById(id);
 
@@ -32,10 +50,30 @@ const JobDetails = () => {
     fetchJob();
   }, [id]);
 
+  const handleCheckEligibility = async () => {
+    try {
+      setEligibilityLoading(true);
+      setEligibilityError("");
+      setEligibility(null);
+
+      const result = await getEligibility(id);
+
+      setEligibility(result);
+    } catch (error) {
+      setEligibilityError(
+        error.response?.data?.message ||
+          "Unable to check eligibility."
+      );
+    } finally {
+      setEligibilityLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div>
         <Navbar />
+
         <main>
           <p>Loading job...</p>
         </main>
@@ -47,6 +85,7 @@ const JobDetails = () => {
     return (
       <div>
         <Navbar />
+
         <main>
           <p>
             {error || "Job not found."}
@@ -75,7 +114,8 @@ const JobDetails = () => {
 
         <p>
           Location:{" "}
-          {job.location || "Not specified"}
+          {job.location ||
+            "Not specified"}
         </p>
 
         <p>
@@ -125,6 +165,30 @@ const JobDetails = () => {
             ", "
           ) || "None specified"}
         </p>
+
+        <hr />
+
+        <h2>Check Your Eligibility</h2>
+
+        <button
+          type="button"
+          onClick={handleCheckEligibility}
+          disabled={eligibilityLoading}
+        >
+          {eligibilityLoading
+            ? "Checking..."
+            : "Check Eligibility"}
+        </button>
+
+        {eligibilityError && (
+          <p>
+            {eligibilityError}
+          </p>
+        )}
+
+        <EligibilityResult
+          result={eligibility}
+        />
       </main>
     </div>
   );
