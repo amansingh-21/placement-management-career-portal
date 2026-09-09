@@ -9,6 +9,10 @@ import {
   getEligibility,
 } from "../../services/jobService.js";
 
+import {
+  applyToJob,
+} from "../../services/applicationService.js";
+
 const JobDetails = () => {
   const { id } = useParams();
 
@@ -23,9 +27,19 @@ const JobDetails = () => {
   const [eligibilityLoading, setEligibilityLoading] =
     useState(false);
 
-  const [error, setError] = useState("");
+  const [applyLoading, setApplyLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
 
   const [eligibilityError, setEligibilityError] =
+    useState("");
+
+  const [applyMessage, setApplyMessage] =
+    useState("");
+
+  const [applyError, setApplyError] =
     useState("");
 
   useEffect(() => {
@@ -66,6 +80,27 @@ const JobDetails = () => {
       );
     } finally {
       setEligibilityLoading(false);
+    }
+  };
+
+  const handleApply = async () => {
+    try {
+      setApplyLoading(true);
+      setApplyMessage("");
+      setApplyError("");
+
+      await applyToJob(id);
+
+      setApplyMessage(
+        "Application submitted successfully."
+      );
+    } catch (error) {
+      setApplyError(
+        error.response?.data?.message ||
+          "Unable to submit application."
+      );
+    } finally {
+      setApplyLoading(false);
     }
   };
 
@@ -119,19 +154,25 @@ const JobDetails = () => {
         </p>
 
         <p>
-          Salary: ₹{job.salary}
+          Salary: ₹
+          {job.salary ??
+            "Not specified"}
         </p>
 
         <p>
           Deadline:{" "}
-          {new Date(
-            job.deadline
-          ).toLocaleDateString()}
+          {job.deadline
+            ? new Date(
+                job.deadline
+              ).toLocaleDateString()
+            : "Not specified"}
         </p>
 
         <h2>Description</h2>
 
-        <p>{job.description}</p>
+        <p>
+          {job.description}
+        </p>
 
         <h2>Eligibility</h2>
 
@@ -155,7 +196,8 @@ const JobDetails = () => {
 
         <p>
           Graduation Year:{" "}
-          {job.eligibility?.graduationYear ||
+          {job.eligibility
+            ?.graduationYear ||
             "Not specified"}
         </p>
 
@@ -163,12 +205,15 @@ const JobDetails = () => {
           Skills:{" "}
           {job.eligibility?.skills?.join(
             ", "
-          ) || "None specified"}
+          ) ||
+            "None specified"}
         </p>
 
         <hr />
 
-        <h2>Check Your Eligibility</h2>
+        <h2>
+          Check Your Eligibility
+        </h2>
 
         <button
           type="button"
@@ -189,6 +234,34 @@ const JobDetails = () => {
         <EligibilityResult
           result={eligibility}
         />
+
+        <hr />
+
+        <h2>
+          Apply for this Job
+        </h2>
+
+        <button
+          type="button"
+          onClick={handleApply}
+          disabled={applyLoading}
+        >
+          {applyLoading
+            ? "Applying..."
+            : "Apply Now"}
+        </button>
+
+        {applyMessage && (
+          <p>
+            {applyMessage}
+          </p>
+        )}
+
+        {applyError && (
+          <p>
+            {applyError}
+          </p>
+        )}
       </main>
     </div>
   );

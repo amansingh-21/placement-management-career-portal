@@ -4,7 +4,7 @@ const applicationSchema = new mongoose.Schema(
   {
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "StudentProfile",
       required: true,
     },
 
@@ -20,6 +20,7 @@ const applicationSchema = new mongoose.Schema(
       enum: [
         "APPLIED",
         "SHORTLISTED",
+        "INTERVIEW",
         "REJECTED",
         "SELECTED",
         "WITHDRAWN",
@@ -34,6 +35,13 @@ const applicationSchema = new mongoose.Schema(
             type: String,
             required: true,
           },
+
+          changedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+
           changedAt: {
             type: Date,
             default: Date.now,
@@ -53,6 +61,9 @@ applicationSchema.index(
   { unique: true }
 );
 
-const Application = mongoose.model("Application", applicationSchema);
+const Application = mongoose.model(
+  "Application",
+  applicationSchema
+);
 
 export default Application;

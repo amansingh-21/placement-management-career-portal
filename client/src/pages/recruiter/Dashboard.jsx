@@ -1,5 +1,5 @@
-import Navbar from "../../components/Navbar.jsx";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar.jsx";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,6 +38,22 @@ const Dashboard = () => {
             onClick={() => navigate("/recruiter/jobs")}
           >
             Manage Jobs
+          </button>
+        </section>
+
+        <section>
+          <h2>Applicants</h2>
+
+          <p>
+            View students who have applied to your job postings and manage
+            their application status.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => navigate("/recruiter/applicants")}
+          >
+            View Applicants
           </button>
         </section>
       </main>
