@@ -10,6 +10,7 @@ import studentRoutes from "./routes/studentRoutes.js";
 import recruiterRoutes from "./routes/recruiterRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
+import interviewRoutes from "./routes/interviewRoutes.js";
 
 import notFoundMiddleware from "./middleware/notFoundMiddleware.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
@@ -33,6 +34,7 @@ app.use("/api/company", companyRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/recruiters", recruiterRoutes);
 app.use("/api", applicationRoutes);
+app.use("/api/interviews", interviewRoutes);
 
 app.use("/uploads", express.static("uploads"));
 

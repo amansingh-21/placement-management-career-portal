@@ -8,6 +8,7 @@ import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 import RecruiterApplicants from "./pages/recruiter/Applicants.jsx";
 import RecruiterApplicantDetails from "./pages/recruiter/ApplicantDetails.jsx";
+import RecruiterInterviews from "./pages/recruiter/Interviews.jsx";
 
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
@@ -19,6 +20,7 @@ import StudentJobs from "./pages/student/Jobs.jsx";
 import StudentJobDetails from "./pages/student/JobDetails.jsx";
 import StudentApplications from "./pages/student/Applications.jsx";
 import StudentApplicationDetails from "./pages/student/ApplicationDetails.jsx";
+import StudentInterviews from "./pages/student/Interviews.jsx";
 
 import RecruiterDashboard from "./pages/recruiter/Dashboard.jsx";
 import CompanyProfile from "./pages/recruiter/CompanyProfile.jsx";
@@ -126,6 +128,17 @@ const App = () => {
         }
       />
 
+      <Route
+        path="/student/interviews"
+        element={
+          <ProtectedRoute
+            allowedRoles={["STUDENT"]}
+          >
+            <StudentInterviews />
+          </ProtectedRoute>
+        }
+      />
+
       {/* RECRUITER */}
 
       <Route
@@ -186,17 +199,32 @@ const App = () => {
       <Route
         path="/recruiter/applicants"
         element={
-          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+          <ProtectedRoute
+            allowedRoles={["RECRUITER"]}
+          >
             <RecruiterApplicants />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/recruiter/applicants/:id"
         element={
-          <ProtectedRoute allowedRoles={["RECRUITER"]}>
+          <ProtectedRoute
+            allowedRoles={["RECRUITER"]}
+          >
             <RecruiterApplicantDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recruiter/interviews"
+        element={
+          <ProtectedRoute
+            allowedRoles={["RECRUITER"]}
+          >
+            <RecruiterInterviews />
           </ProtectedRoute>
         }
       />

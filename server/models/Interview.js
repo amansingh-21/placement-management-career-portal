@@ -22,7 +22,12 @@ const interviewSchema = new mongoose.Schema(
     status: {
       type: String,
       required: true,
-      enum: ["SCHEDULED", "COMPLETED", "CANCELLED"],
+      enum: [
+        "SCHEDULED",
+        "RESCHEDULED",
+        "CANCELLED",
+        "COMPLETED",
+      ],
       default: "SCHEDULED",
     },
 
@@ -37,6 +42,9 @@ const interviewSchema = new mongoose.Schema(
   }
 );
 
-const Interview = mongoose.model("Interview", interviewSchema);
+const Interview = mongoose.model(
+  "Interview",
+  interviewSchema
+);
 
 export default Interview;

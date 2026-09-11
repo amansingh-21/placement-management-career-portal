@@ -20,7 +20,9 @@ const Dashboard = () => {
 
           <button
             type="button"
-            onClick={() => navigate("/recruiter/company")}
+            onClick={() =>
+              navigate("/recruiter/company")
+            }
           >
             Manage Company
           </button>
@@ -35,7 +37,9 @@ const Dashboard = () => {
 
           <button
             type="button"
-            onClick={() => navigate("/recruiter/jobs")}
+            onClick={() =>
+              navigate("/recruiter/jobs")
+            }
           >
             Manage Jobs
           </button>
@@ -51,9 +55,29 @@ const Dashboard = () => {
 
           <button
             type="button"
-            onClick={() => navigate("/recruiter/applicants")}
+            onClick={() =>
+              navigate("/recruiter/applicants")
+            }
           >
             View Applicants
+          </button>
+        </section>
+
+        <section>
+          <h2>Interviews</h2>
+
+          <p>
+            Schedule, reschedule, cancel, and complete interviews for shortlisted
+            applicants.
+          </p>
+
+          <button
+            type="button"
+            onClick={() =>
+              navigate("/recruiter/interviews")
+            }
+          >
+            Manage Interviews
           </button>
         </section>
       </main>
