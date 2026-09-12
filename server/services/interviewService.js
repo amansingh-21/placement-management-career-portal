@@ -1,6 +1,7 @@
 import Interview from "../models/Interview.js";
 import Application from "../models/Application.js";
 import StudentProfile from "../models/StudentProfile.js";
+import { createNotification } from "./notificationService.js";
 
 const error = (message, statusCode) =>
   Object.assign(new Error(message), { statusCode });
@@ -77,6 +78,18 @@ export const schedule = async (
 
   await application.save();
 
+  const student = await StudentProfile.findById(
+    application.studentId
+  );
+
+  if (student) {
+    await createNotification(
+      student.userId,
+      "INTERVIEW",
+      "Your interview has been scheduled."
+    );
+  }
+
   return interview;
 };
 
@@ -120,6 +133,9 @@ export const updateInterview = async (
     );
   }
 
+  let notificationType = null;
+  let notificationMessage = null;
+
   if (scheduledAt) {
     const newDate = new Date(scheduledAt);
 
@@ -145,6 +161,10 @@ export const updateInterview = async (
 
     interview.scheduledAt = newDate;
     interview.status = "RESCHEDULED";
+
+    notificationType = "INTERVIEW";
+    notificationMessage =
+      "Your interview has been rescheduled.";
   }
 
   if (status) {
@@ -182,9 +202,40 @@ export const updateInterview = async (
     }
 
     interview.status = status;
+
+    const messages = {
+      RESCHEDULED:
+        "Your interview has been rescheduled.",
+      CANCELLED:
+        "Your interview has been cancelled.",
+      COMPLETED:
+        "Your interview has been completed.",
+    };
+
+    notificationType = "INTERVIEW";
+    notificationMessage = messages[status];
   }
 
-  return interview.save();
+  const savedInterview =
+    await interview.save();
+
+  const student = await StudentProfile.findById(
+    interview.applicationId.studentId
+  );
+
+  if (
+    student &&
+    notificationType &&
+    notificationMessage
+  ) {
+    await createNotification(
+      student.userId,
+      notificationType,
+      notificationMessage
+    );
+  }
+
+  return savedInterview;
 };
 
 export const getMyInterviews = async (

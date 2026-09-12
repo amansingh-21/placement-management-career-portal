@@ -5,6 +5,7 @@ import Job from "../models/Job.js";
 import StudentProfile from "../models/StudentProfile.js";
 import { checkEligibility } from "./eligibilityService.js";
 import { canTransition } from "../utils/applicationTransitions.js";
+import { createNotification } from "./notificationService.js";
 
 const error = (message, statusCode) =>
   Object.assign(new Error(message), { statusCode });
@@ -191,6 +192,30 @@ export const updateStatus = async (
   });
 
   await application.save();
+
+  if (
+    nextStatus === "SHORTLISTED" ||
+    nextStatus === "REJECTED"
+  ) {
+    const messages = {
+      SHORTLISTED:
+        "Your application has been shortlisted.",
+      REJECTED:
+        "Your application has been rejected.",
+    };
+
+    const student = await StudentProfile.findById(
+      application.studentId
+    );
+
+    if (student) {
+      await createNotification(
+        student.userId,
+        nextStatus,
+        messages[nextStatus]
+      );
+    }
+  }
 
   return Application.findById(applicationId)
     .populate({

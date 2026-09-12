@@ -21,6 +21,7 @@ import StudentJobDetails from "./pages/student/JobDetails.jsx";
 import StudentApplications from "./pages/student/Applications.jsx";
 import StudentApplicationDetails from "./pages/student/ApplicationDetails.jsx";
 import StudentInterviews from "./pages/student/Interviews.jsx";
+import Notifications from "./pages/student/Notifications.jsx";
 
 import RecruiterDashboard from "./pages/recruiter/Dashboard.jsx";
 import CompanyProfile from "./pages/recruiter/CompanyProfile.jsx";
@@ -135,6 +136,17 @@ const App = () => {
             allowedRoles={["STUDENT"]}
           >
             <StudentInterviews />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/notifications"
+        element={
+          <ProtectedRoute
+            allowedRoles={["STUDENT"]}
+          >
+            <Notifications />
           </ProtectedRoute>
         }
       />

@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
+import NotificationBell from "./NotificationBell.jsx";
+
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -23,9 +25,15 @@ const Navbar = () => {
           </span>
         )}
 
+        {user?.role === "STUDENT" && (
+          <NotificationBell />
+        )}
+
         {user?.role === "RECRUITER" && (
           <button
-            onClick={() => navigate("/recruiter/company")}
+            onClick={() =>
+              navigate("/recruiter/company")
+            }
           >
             Company Profile
           </button>
