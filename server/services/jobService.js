@@ -1,6 +1,147 @@
 import Job from "../models/Job.js";
 import RecruiterProfile from "../models/RecruiterProfile.js";
 
+const validateEligibility = (eligibility = {}) => {
+  if (
+    eligibility === null ||
+    typeof eligibility !== "object" ||
+    Array.isArray(eligibility)
+  ) {
+    throw Object.assign(
+      new Error("Eligibility must be an object"),
+      { statusCode: 400 }
+    );
+  }
+
+  if (eligibility.minCgpa !== undefined) {
+    const minCgpa = Number(eligibility.minCgpa);
+
+    if (
+      !Number.isFinite(minCgpa) ||
+      minCgpa < 0 ||
+      minCgpa > 10
+    ) {
+      throw Object.assign(
+        new Error("Minimum CGPA must be between 0 and 10"),
+        { statusCode: 400 }
+      );
+    }
+  }
+
+  if (eligibility.maxBacklogs !== undefined) {
+    const maxBacklogs = Number(
+      eligibility.maxBacklogs
+    );
+
+    if (
+      !Number.isInteger(maxBacklogs) ||
+      maxBacklogs < 0
+    ) {
+      throw Object.assign(
+        new Error(
+          "Maximum backlogs must be a non-negative integer"
+        ),
+        { statusCode: 400 }
+      );
+    }
+  }
+
+  if (eligibility.degree !== undefined) {
+    if (
+      typeof eligibility.degree !== "string" ||
+      !eligibility.degree.trim()
+    ) {
+      throw Object.assign(
+        new Error("Degree must be a valid value"),
+        { statusCode: 400 }
+      );
+    }
+  }
+
+  if (eligibility.graduationYear !== undefined) {
+    const graduationYear = Number(
+      eligibility.graduationYear
+    );
+
+    if (
+      !Number.isInteger(graduationYear) ||
+      graduationYear < 1900 ||
+      graduationYear > 2100
+    ) {
+      throw Object.assign(
+        new Error(
+          "Graduation year must be between 1900 and 2100"
+        ),
+        { statusCode: 400 }
+      );
+    }
+  }
+
+  if (eligibility.skills !== undefined) {
+    if (!Array.isArray(eligibility.skills)) {
+      throw Object.assign(
+        new Error("Required skills must be an array"),
+        { statusCode: 400 }
+      );
+    }
+
+    const invalidSkill = eligibility.skills.some(
+      (skill) =>
+        typeof skill !== "string" ||
+        !skill.trim()
+    );
+
+    if (invalidSkill) {
+      throw Object.assign(
+        new Error(
+          "Each required skill must be a valid string"
+        ),
+        { statusCode: 400 }
+      );
+    }
+  }
+};
+
+const validateSalary = (salary) => {
+  const value = Number(salary);
+
+  if (!Number.isFinite(value) || value < 0) {
+    throw Object.assign(
+      new Error("Salary must be a valid number greater than or equal to 0"),
+      { statusCode: 400 }
+    );
+  }
+
+  return value;
+};
+
+const validateDeadline = (deadline) => {
+  if (!deadline) {
+    throw Object.assign(
+      new Error("Deadline is required"),
+      { statusCode: 400 }
+    );
+  }
+
+  const date = new Date(deadline);
+
+  if (Number.isNaN(date.getTime())) {
+    throw Object.assign(
+      new Error("Deadline must be a valid date"),
+      { statusCode: 400 }
+    );
+  }
+
+  if (date <= new Date()) {
+    throw Object.assign(
+      new Error("Deadline must be in the future"),
+      { statusCode: 400 }
+    );
+  }
+
+  return date;
+};
+
 export const createJob = async (userId, data) => {
   const profile = await RecruiterProfile.findOne({
     userId,
@@ -36,37 +177,22 @@ export const createJob = async (userId, data) => {
     );
   }
 
-  if (!data.deadline) {
-    throw Object.assign(
-      new Error("Deadline is required"),
-      { statusCode: 400 }
-    );
-  }
+  const deadline = validateDeadline(data.deadline);
 
-  if (new Date(data.deadline) <= new Date()) {
-    throw Object.assign(
-      new Error("Deadline must be in the future"),
-      { statusCode: 400 }
-    );
-  }
+  const salary =
+    data.salary === undefined
+      ? 0
+      : validateSalary(data.salary);
 
-  if (
-    data.salary !== undefined &&
-    Number(data.salary) < 0
-  ) {
-    throw Object.assign(
-      new Error("Salary cannot be negative"),
-      { statusCode: 400 }
-    );
-  }
+  validateEligibility(data.eligibility || {});
 
   const job = await Job.create({
     title: data.title.trim(),
     description: data.description.trim(),
     location: data.location?.trim() || "",
-    salary: Number(data.salary || 0),
+    salary,
     eligibility: data.eligibility || {},
-    deadline: data.deadline,
+    deadline,
     companyId: profile.companyId._id,
     createdBy: userId,
     approvalStatus: "PENDING",
@@ -198,28 +324,15 @@ export const updateJob = async (
   }
 
   if (data.salary !== undefined) {
-    if (Number(data.salary) < 0) {
-      throw Object.assign(
-        new Error("Salary cannot be negative"),
-        { statusCode: 400 }
-      );
-    }
-
-    job.salary = Number(data.salary);
+    job.salary = validateSalary(data.salary);
   }
 
   if (data.deadline !== undefined) {
-    if (new Date(data.deadline) <= new Date()) {
-      throw Object.assign(
-        new Error("Deadline must be in the future"),
-        { statusCode: 400 }
-      );
-    }
-
-    job.deadline = data.deadline;
+    job.deadline = validateDeadline(data.deadline);
   }
 
   if (data.eligibility !== undefined) {
+    validateEligibility(data.eligibility);
     job.eligibility = data.eligibility;
   }
 
@@ -233,8 +346,8 @@ export const submitJob = async (
   jobId
 ) => {
   const job = await Job.findOne({
-    _id: jobId,
     createdBy: userId,
+    _id: jobId,
   });
 
   if (!job) {
@@ -268,9 +381,7 @@ export const approveJob = async (jobId) => {
     status: "DRAFT",
   });
 
-  if (!job) {
-    return null;
-  }
+  if (!job) return null;
 
   job.approvalStatus = "APPROVED";
   job.status = "PUBLISHED";
@@ -285,9 +396,7 @@ export const rejectJob = async (jobId) => {
     status: "DRAFT",
   });
 
-  if (!job) {
-    return null;
-  }
+  if (!job) return null;
 
   job.approvalStatus = "REJECTED";
 
