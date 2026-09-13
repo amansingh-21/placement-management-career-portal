@@ -8,16 +8,25 @@ import { canTransition } from "../utils/applicationTransitions.js";
 import { createNotification } from "./notificationService.js";
 
 const error = (message, statusCode) =>
-  Object.assign(new Error(message), { statusCode });
+  Object.assign(new Error(message), {
+    statusCode,
+  });
 
-export const applyToJob = async (userId, jobId) => {
+export const applyToJob = async (
+  userId,
+  jobId
+) => {
   if (!mongoose.isValidObjectId(jobId)) {
-    throw error("Invalid job ID", 400);
+    throw error(
+      "Invalid job ID",
+      400
+    );
   }
 
-  const profile = await StudentProfile.findOne({
-    userId,
-  });
+  const profile =
+    await StudentProfile.findOne({
+      userId,
+    });
 
   if (!profile) {
     throw error(
@@ -29,42 +38,58 @@ export const applyToJob = async (userId, jobId) => {
   const job = await Job.findById(jobId);
 
   if (!job) {
-    throw error("Job not found", 404);
+    throw error(
+      "Job not found",
+      404
+    );
   }
 
   if (
     job.approvalStatus !== "APPROVED" ||
     job.status !== "PUBLISHED"
   ) {
-    throw error("Job is not open", 400);
+    throw error(
+      "Job is not open",
+      400
+    );
   }
 
-  if (new Date(job.deadline) <= new Date()) {
+  if (
+    new Date(job.deadline) <=
+    new Date()
+  ) {
     throw error(
       "Application deadline has passed",
       400
     );
   }
 
-  const eligibility = checkEligibility(
-    profile,
-    job
-  );
+  const eligibility =
+    checkEligibility(
+      profile,
+      job
+    );
 
   if (!eligibility.eligible) {
     throw error(
-      `Not eligible: ${eligibility.reasons.join("; ")}`,
+      `Not eligible: ${eligibility.reasons.join(
+        "; "
+      )}`,
       400
     );
   }
 
-  const exists = await Application.findOne({
-    studentId: profile._id,
-    jobId,
-  });
+  const exists =
+    await Application.findOne({
+      studentId: profile._id,
+      jobId,
+    });
 
   if (exists) {
-    throw error("Already applied", 409);
+    throw error(
+      "Already applied",
+      409
+    );
   }
 
   return Application.create({
@@ -80,10 +105,13 @@ export const applyToJob = async (userId, jobId) => {
   });
 };
 
-export const getMyApplications = async (userId) => {
-  const profile = await StudentProfile.findOne({
-    userId,
-  });
+export const getMyApplications = async (
+  userId
+) => {
+  const profile =
+    await StudentProfile.findOne({
+      userId,
+    });
 
   if (!profile) {
     throw error(
@@ -106,57 +134,66 @@ export const getMyApplications = async (userId) => {
       path: "statusHistory.changedBy",
       select: "name email",
     })
-    .sort({ createdAt: -1 });
+    .sort({
+      createdAt: -1,
+    });
 };
 
-export const getRecruiterApplications = async (
-  recruiterUserId
-) => {
-  return Application.find()
-    .populate({
-      path: "jobId",
-      match: {
-        createdBy: recruiterUserId,
-      },
-      populate: {
-        path: "companyId",
-        select: "name",
-      },
-    })
-    .populate({
-      path: "studentId",
-      populate: {
-        path: "userId",
+export const getRecruiterApplications =
+  async (recruiterUserId) => {
+    return Application.find()
+      .populate({
+        path: "jobId",
+        match: {
+          createdBy: recruiterUserId,
+        },
+        populate: {
+          path: "companyId",
+          select: "name",
+        },
+      })
+      .populate({
+        path: "studentId",
+        populate: {
+          path: "userId",
+          select: "name email",
+        },
+      })
+      .populate({
+        path: "statusHistory.changedBy",
         select: "name email",
-      },
-    })
-    .populate({
-      path: "statusHistory.changedBy",
-      select: "name email",
-    })
-    .sort({ createdAt: -1 })
-    .then((applications) =>
-      applications.filter(
-        (application) => application.jobId
-      )
-    );
-};
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .then((applications) =>
+        applications.filter(
+          (application) =>
+            application.jobId
+        )
+      );
+  };
 
 export const updateStatus = async (
   applicationId,
   recruiterUserId,
   nextStatus
 ) => {
-  if (!mongoose.isValidObjectId(applicationId)) {
+  if (
+    !mongoose.isValidObjectId(
+      applicationId
+    )
+  ) {
     throw error(
       "Invalid application ID",
       400
     );
   }
 
-  const application = await Application.findById(
-    applicationId
-  ).populate("jobId");
+  const application =
+    await Application.findById(
+      applicationId
+    ).populate("jobId");
 
   if (!application) {
     throw error(
@@ -169,7 +206,19 @@ export const updateStatus = async (
     application.jobId.createdBy.toString() !==
     recruiterUserId.toString()
   ) {
-    throw error("Not allowed", 403);
+    throw error(
+      "Not allowed",
+      403
+    );
+  }
+
+  if (
+    nextStatus === "INTERVIEW"
+  ) {
+    throw error(
+      "Schedule an interview to move the application to INTERVIEW",
+      400
+    );
   }
 
   if (
@@ -184,7 +233,8 @@ export const updateStatus = async (
     );
   }
 
-  application.status = nextStatus;
+  application.status =
+    nextStatus;
 
   application.statusHistory.push({
     status: nextStatus,
@@ -193,6 +243,7 @@ export const updateStatus = async (
 
   await application.save();
 
+ 
   if (
     nextStatus === "SHORTLISTED" ||
     nextStatus === "REJECTED"
@@ -200,13 +251,15 @@ export const updateStatus = async (
     const messages = {
       SHORTLISTED:
         "Your application has been shortlisted.",
+
       REJECTED:
         "Your application has been rejected.",
     };
 
-    const student = await StudentProfile.findById(
-      application.studentId
-    );
+    const student =
+      await StudentProfile.findById(
+        application.studentId
+      );
 
     if (student) {
       await createNotification(
@@ -217,7 +270,9 @@ export const updateStatus = async (
     }
   }
 
-  return Application.findById(applicationId)
+  return Application.findById(
+    applicationId
+  )
     .populate({
       path: "jobId",
       populate: {

@@ -200,6 +200,30 @@ const Interviews = () => {
     }
   };
 
+  const handleResultUpdate = async (
+    interviewId,
+    result
+  ) => {
+    try {
+      setActionLoading(true);
+      setActionError("");
+
+      await updateInterview(
+        interviewId,
+        { result }
+      );
+
+      await fetchData();
+    } catch (error) {
+      setActionError(
+        error.response?.data?.message ||
+          "Unable to update interview result."
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -367,6 +391,15 @@ const Interviews = () => {
                     rescheduleId ===
                     interview._id;
 
+                  const isCompleted =
+                    interview.status ===
+                    "COMPLETED";
+
+                  const hasResult =
+                    interview.result &&
+                    interview.result !==
+                      "PENDING";
+
                   return (
                     <div
                       key={interview._id}
@@ -485,10 +518,9 @@ const Interviews = () => {
                       )}
 
                       {!isRescheduling &&
+                        !isCompleted &&
                         interview.status !==
-                          "CANCELLED" &&
-                        interview.status !==
-                          "COMPLETED" && (
+                          "CANCELLED" && (
                           <div>
                             <button
                               type="button"
@@ -532,6 +564,46 @@ const Interviews = () => {
                               }
                             >
                               Complete
+                            </button>
+                          </div>
+                        )}
+
+                      {isCompleted &&
+                        !hasResult && (
+                          <div>
+                            <p>
+                              Record Interview
+                              Result:
+                            </p>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleResultUpdate(
+                                  interview._id,
+                                  "PASSED"
+                                )
+                              }
+                              disabled={
+                                actionLoading
+                              }
+                            >
+                              Passed
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleResultUpdate(
+                                  interview._id,
+                                  "FAILED"
+                                )
+                              }
+                              disabled={
+                                actionLoading
+                              }
+                            >
+                              Failed
                             </button>
                           </div>
                         )}

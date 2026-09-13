@@ -35,10 +35,11 @@ export const getMyInterviews = async () => {
   return response.data.interviews;
 };
 
-export const getRecruiterInterviews = async () => {
-  const response = await api.get(
-    "/interviews/recruiter"
-  );
+export const getRecruiterInterviews =
+  async () => {
+    const response = await api.get(
+      "/interviews/recruiter"
+    );
 
-  return response.data.interviews;
-};
+    return response.data.interviews;
+  };

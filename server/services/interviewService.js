@@ -1,10 +1,11 @@
 import Interview from "../models/Interview.js";
 import Application from "../models/Application.js";
 import StudentProfile from "../models/StudentProfile.js";
-import { createNotification } from "./notificationService.js";
 
 const error = (message, statusCode) =>
-  Object.assign(new Error(message), { statusCode });
+  Object.assign(new Error(message), {
+    statusCode,
+  });
 
 export const schedule = async (
   recruiterId,
@@ -13,7 +14,9 @@ export const schedule = async (
 ) => {
   if (
     !scheduledAt ||
-    Number.isNaN(new Date(scheduledAt).getTime()) ||
+    Number.isNaN(
+      new Date(scheduledAt).getTime()
+    ) ||
     new Date(scheduledAt) <= new Date()
   ) {
     throw error(
@@ -43,7 +46,9 @@ export const schedule = async (
     );
   }
 
-  if (application.status !== "SHORTLISTED") {
+  if (
+    application.status !== "SHORTLISTED"
+  ) {
     throw error(
       "Application must be shortlisted",
       400
@@ -62,12 +67,13 @@ export const schedule = async (
     );
   }
 
-  const interview = await Interview.create({
-    applicationId,
-    recruiterId,
-    scheduledAt,
-    status: "SCHEDULED",
-  });
+  const interview =
+    await Interview.create({
+      applicationId,
+      recruiterId,
+      scheduledAt,
+      status: "SCHEDULED",
+    });
 
   application.status = "INTERVIEW";
 
@@ -78,18 +84,6 @@ export const schedule = async (
 
   await application.save();
 
-  const student = await StudentProfile.findById(
-    application.studentId
-  );
-
-  if (student) {
-    await createNotification(
-      student.userId,
-      "INTERVIEW",
-      "Your interview has been scheduled."
-    );
-  }
-
   return interview;
 };
 
@@ -99,13 +93,14 @@ export const updateInterview = async (
   updates = {}
 ) => {
   const interview =
-    await Interview.findById(interviewId)
-      .populate({
-        path: "applicationId",
-        populate: {
-          path: "jobId",
-        },
-      });
+    await Interview.findById(
+      interviewId
+    ).populate({
+      path: "applicationId",
+      populate: {
+        path: "jobId",
+      },
+    });
 
   if (!interview) {
     throw error(
@@ -124,11 +119,19 @@ export const updateInterview = async (
     );
   }
 
-  const { scheduledAt, status } = updates;
+  const {
+    scheduledAt,
+    status,
+    result,
+  } = updates;
 
-  if (!scheduledAt && !status) {
+  if (
+    !scheduledAt &&
+    !status &&
+    !result
+  ) {
     throw error(
-      "Provide scheduledAt or status",
+      "Provide scheduledAt, status, or result",
       400
     );
   }
@@ -136,8 +139,13 @@ export const updateInterview = async (
   let notificationType = null;
   let notificationMessage = null;
 
+  /*
+   * RESCHEDULE
+   */
   if (scheduledAt) {
-    const newDate = new Date(scheduledAt);
+    const newDate = new Date(
+      scheduledAt
+    );
 
     if (
       Number.isNaN(newDate.getTime()) ||
@@ -163,10 +171,14 @@ export const updateInterview = async (
     interview.status = "RESCHEDULED";
 
     notificationType = "INTERVIEW";
+
     notificationMessage =
       "Your interview has been rescheduled.";
   }
 
+  /*
+   * STATUS UPDATE
+   */
   if (status) {
     const allowedStatuses = [
       "RESCHEDULED",
@@ -174,7 +186,9 @@ export const updateInterview = async (
       "COMPLETED",
     ];
 
-    if (!allowedStatuses.includes(status)) {
+    if (
+      !allowedStatuses.includes(status)
+    ) {
       throw error(
         "Invalid interview status",
         400
@@ -206,28 +220,81 @@ export const updateInterview = async (
     const messages = {
       RESCHEDULED:
         "Your interview has been rescheduled.",
+
       CANCELLED:
         "Your interview has been cancelled.",
+
       COMPLETED:
         "Your interview has been completed.",
     };
 
     notificationType = "INTERVIEW";
-    notificationMessage = messages[status];
+
+    notificationMessage =
+      messages[status];
+  }
+
+  /*
+   * INTERVIEW RESULT
+   */
+  if (result) {
+    const allowedResults = [
+      "PASSED",
+      "FAILED",
+    ];
+
+    if (
+      !allowedResults.includes(result)
+    ) {
+      throw error(
+        "Invalid interview result",
+        400
+      );
+    }
+
+    if (
+      interview.status !== "COMPLETED"
+    ) {
+      throw error(
+        "Interview must be completed before recording the result",
+        400
+      );
+    }
+
+    if (
+      interview.result !== "PENDING"
+    ) {
+      throw error(
+        "Interview result has already been recorded",
+        409
+      );
+    }
+
+    interview.result = result;
   }
 
   const savedInterview =
     await interview.save();
 
-  const student = await StudentProfile.findById(
-    interview.applicationId.studentId
-  );
+  /*
+   * Notification
+   */
+  const student =
+    await StudentProfile.findById(
+      interview.applicationId.studentId
+    );
 
   if (
     student &&
     notificationType &&
     notificationMessage
   ) {
+    const {
+      createNotification,
+    } = await import(
+      "./notificationService.js"
+    );
+
     await createNotification(
       student.userId,
       notificationType,
@@ -263,48 +330,42 @@ export const getMyInterviews = async (
         path: "jobId",
         populate: {
           path: "companyId",
-          select: "name",
         },
       },
     })
-    .populate({
-      path: "recruiterId",
-      select: "name email",
-    })
-    .sort({ scheduledAt: 1 })
-    .then((interviews) =>
-      interviews.filter(
-        (interview) =>
-          interview.applicationId
-      )
-    );
+    .populate(
+      "recruiterId",
+      "name email"
+    )
+    .sort({
+      scheduledAt: 1,
+    });
 };
 
-export const getRecruiterInterviews = async (
-  recruiterId
-) => {
-  return Interview.find({
-    recruiterId,
-  })
-    .populate({
-      path: "applicationId",
-      populate: {
-        path: "jobId",
-        populate: {
-          path: "companyId",
-          select: "name",
-        },
-      },
+export const getRecruiterInterviews =
+  async (userId) => {
+    return Interview.find({
+      recruiterId: userId,
     })
-    .populate({
-      path: "applicationId",
-      populate: {
-        path: "studentId",
-        populate: {
-          path: "userId",
-          select: "name email",
-        },
-      },
-    })
-    .sort({ scheduledAt: 1 });
-};
+      .populate({
+        path: "applicationId",
+        populate: [
+          {
+            path: "jobId",
+            populate: {
+              path: "companyId",
+            },
+          },
+          {
+            path: "studentId",
+            populate: {
+              path: "userId",
+              select: "name email",
+            },
+          },
+        ],
+      })
+      .sort({
+        scheduledAt: 1,
+      });
+  };
