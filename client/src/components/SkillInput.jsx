@@ -12,9 +12,7 @@ const SkillInput = ({ skills, onChange }) => {
 
     if (
       skills.some(
-        (existingSkill) =>
-          existingSkill.toLowerCase() ===
-          trimmedSkill.toLowerCase()
+        (existingSkill) => existingSkill.toLowerCase() === trimmedSkill.toLowerCase()
       )
     ) {
       setSkill("");
@@ -26,12 +24,7 @@ const SkillInput = ({ skills, onChange }) => {
   };
 
   const handleRemove = (skillToRemove) => {
-    onChange(
-      skills.filter(
-        (existingSkill) =>
-          existingSkill !== skillToRemove
-      )
-    );
+    onChange(skills.filter((existingSkill) => existingSkill !== skillToRemove));
   };
 
   const handleKeyDown = (event) => {
@@ -42,46 +35,36 @@ const SkillInput = ({ skills, onChange }) => {
   };
 
   return (
-    <div>
-      <label htmlFor="skill">
+    <div className="field">
+      <label htmlFor="skill" className="field-label">
         Add Skill
       </label>
 
-      <br />
+      <div style={{ display: "flex", gap: "var(--space-2)" }}>
+        <input
+          id="skill"
+          type="text"
+          className="input"
+          value={skill}
+          onChange={(event) => setSkill(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="e.g. JavaScript"
+        />
 
-      <input
-        id="skill"
-        type="text"
-        value={skill}
-        onChange={(event) =>
-          setSkill(event.target.value)
-        }
-        onKeyDown={handleKeyDown}
-        placeholder="e.g. JavaScript"
-      />
-
-      <button
-        type="button"
-        onClick={handleAdd}
-      >
-        Add Skill
-      </button>
-
-      <br />
-      <br />
+        <button type="button" className="btn btn-secondary" onClick={handleAdd}>
+          Add
+        </button>
+      </div>
 
       {skills.length === 0 ? (
-        <p>No skills added yet.</p>
+        <p className="field-hint">No skills added yet.</p>
       ) : (
-        <div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)", marginTop: "var(--space-1)" }}>
           {skills.map((item) => (
-            <span key={item}>
-              {item}{" "}
-              <button
-                type="button"
-                onClick={() => handleRemove(item)}
-              >
-                Remove
+            <span key={item} className="chip">
+              {item}
+              <button type="button" onClick={() => handleRemove(item)} aria-label={`Remove ${item}`}>
+                ✕
               </button>
             </span>
           ))}

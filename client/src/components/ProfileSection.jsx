@@ -1,11 +1,8 @@
 const ProfileSection = ({ title, children }) => {
   return (
-    <section>
-      <h2>{title}</h2>
-
-      <div>
-        {children}
-      </div>
+    <section className="card section">
+      <h2 className="section-title">{title}</h2>
+      <div>{children}</div>
     </section>
   );
 };

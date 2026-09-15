@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
 import { getJobs } from "../../services/jobService.js";
 
 const Jobs = () => {
@@ -22,8 +24,7 @@ const Jobs = () => {
       setJobs(data);
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to load jobs."
+        error.response?.data?.message || "Unable to load jobs."
       );
     } finally {
       setLoading(false);
@@ -40,78 +41,67 @@ const Jobs = () => {
   };
 
   return (
-    <div>
-      <Navbar />
-
-      <main>
+    <DashboardLayout>
+      <div className="page-header">
         <h1>Jobs</h1>
+        <p>Browse open roles and apply to the ones that fit you.</p>
+      </div>
 
-        <form onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="Search by title or location"
-            value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
-          />
+      <form onSubmit={handleSearch} className="search-bar">
+        <input
+          type="text"
+          className="input"
+          placeholder="Search by title or location"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
 
-          <button type="submit">
-            Search
-          </button>
-        </form>
+        <button type="submit" className="btn btn-primary">
+          Search
+        </button>
+      </form>
 
-        {loading && (
-          <p>Loading jobs...</p>
-        )}
+      {loading && <Loader message="Loading jobs..." />}
 
-        {error && <p>{error}</p>}
+      <ErrorMessage message={error} />
 
-        {!loading &&
-          !error &&
-          jobs.length === 0 && (
-            <p>No open jobs found.</p>
-          )}
+      {!loading && !error && jobs.length === 0 && (
+        <div className="empty-state">
+          <h3>No open jobs found</h3>
+          <p>Try a different search term, or check back later.</p>
+        </div>
+      )}
 
-        {!loading &&
-          !error &&
-          jobs.map((job) => (
-            <article key={job._id}>
-              <h2>{job.title}</h2>
+      {!loading && !error && jobs.length > 0 && (
+        <div className="list-stack">
+          {jobs.map((job) => (
+            <article className="list-item" key={job._id}>
+              <div className="list-item-header">
+                <h2>{job.title}</h2>
+                <span className="badge badge-accent">₹{job.salary}</span>
+              </div>
 
-              <p>
-                Company:{" "}
-                {job.companyId?.name ||
-                  "Unknown"}
-              </p>
+              <div className="list-item-meta">
+                <span>Company: {job.companyId?.name || "Unknown"}</span>
+                <span>Location: {job.location || "Not specified"}</span>
+                <span>
+                  Deadline:{" "}
+                  {job.deadline
+                    ? new Date(job.deadline).toLocaleDateString()
+                    : "Not specified"}
+                </span>
+              </div>
 
-              <p>
-                Location:{" "}
-                {job.location || "Not specified"}
-              </p>
-
-              <p>
-                Salary: ₹{job.salary}
-              </p>
-
-              <p>
-                Deadline:{" "}
-                {new Date(
-                  job.deadline
-                ).toLocaleDateString()}
-              </p>
-
-              <Link
-                to={`/student/jobs/${job._id}`}
-              >
-                View Details
-              </Link>
-
-              <hr />
+              <div className="list-item-footer">
+                <Link to={`/student/jobs/${job._id}`} className="btn btn-secondary btn-sm">
+                  View Details
+                </Link>
+              </div>
             </article>
           ))}
-      </main>
-    </div>
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 

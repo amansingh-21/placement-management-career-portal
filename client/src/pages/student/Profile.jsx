@@ -72,8 +72,7 @@ const Profile = () => {
         }
       } catch (error) {
         const message =
-          error.response?.data?.message ||
-          "Unable to load your profile.";
+          error.response?.data?.message || "Unable to load your profile.";
 
         setError(message);
       } finally {
@@ -130,12 +129,7 @@ const Profile = () => {
       return;
     }
 
-    if (
-      year === "" ||
-      !Number.isInteger(year) ||
-      year < 1900 ||
-      year > 2100
-    ) {
+    if (year === "" || !Number.isInteger(year) || year < 1900 || year > 2100) {
       setError("Certification year must be between 1900 and 2100.");
       return;
     }
@@ -159,9 +153,7 @@ const Profile = () => {
   const handleRemoveCertification = (certificationToRemove) => {
     setCertifications((previous) =>
       previous.filter(
-        (certification) =>
-          certification !==
-          certificationToRemove
+        (certification) => certification !== certificationToRemove
       )
     );
   };
@@ -271,8 +263,7 @@ const Profile = () => {
       setSuccess("Resume uploaded successfully.");
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "Unable to upload your resume.";
+        error.response?.data?.message || "Unable to upload your resume.";
 
       setError(message);
     } finally {
@@ -295,8 +286,7 @@ const Profile = () => {
       setSuccess("Projects updated successfully.");
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "Unable to update your projects.";
+        error.response?.data?.message || "Unable to update your projects.";
 
       setError(message);
     } finally {
@@ -320,10 +310,7 @@ const Profile = () => {
       return;
     }
 
-    if (
-      formData.backlogs !== "" &&
-      Number(formData.backlogs) < 0
-    ) {
+    if (formData.backlogs !== "" && Number(formData.backlogs) < 0) {
       setError("Backlogs cannot be negative.");
       return;
     }
@@ -337,14 +324,8 @@ const Profile = () => {
           formData.graduationYear === ""
             ? undefined
             : Number(formData.graduationYear),
-        cgpa:
-          formData.cgpa === ""
-            ? undefined
-            : Number(formData.cgpa),
-        backlogs:
-          formData.backlogs === ""
-            ? 0
-            : Number(formData.backlogs),
+        cgpa: formData.cgpa === "" ? undefined : Number(formData.cgpa),
+        backlogs: formData.backlogs === "" ? 0 : Number(formData.backlogs),
       });
 
       setProfile(data);
@@ -359,8 +340,7 @@ const Profile = () => {
       setSuccess("Profile updated successfully.");
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "Unable to update your profile.";
+        error.response?.data?.message || "Unable to update your profile.";
 
       setError(message);
     } finally {
@@ -383,8 +363,7 @@ const Profile = () => {
       setSuccess("Skills updated successfully.");
     } catch (error) {
       const message =
-        error.response?.data?.message ||
-        "Unable to update your skills.";
+        error.response?.data?.message || "Unable to update your skills.";
 
       setError(message);
     } finally {
@@ -392,351 +371,358 @@ const Profile = () => {
     }
   };
 
+  const fileInputStyle = {
+    border: "1px solid var(--color-border-strong)",
+    borderRadius: "var(--radius-sm)",
+    background: "var(--color-surface)",
+    color: "var(--text-primary)",
+    fontSize: 14,
+    fontFamily: "inherit",
+    width: "100%",
+    padding: "var(--space-3) var(--space-4)",
+  };
+
   return (
     <DashboardLayout>
-      <h1>My Profile</h1>
+      <div className="page-header">
+        <h1>My Profile</h1>
+        <p>
+          A complete profile improves your eligibility for more roles.
+          {profile?.profileCompletion != null
+            ? ` Currently ${profile.profileCompletion}% complete.`
+            : ""}
+        </p>
+      </div>
 
-      {loading && (
-        <Loader message="Loading your profile..." />
-      )}
-
-      {!loading && error && (
-        <ErrorMessage message={error} />
-      )}
+      {loading && <Loader message="Loading your profile..." />}
 
       {!loading && (
-        <form onSubmit={handleSubmit}>
-          <ProfileSection title="Academic Information">
-            <div>
-              <label htmlFor="degree">
-                Degree
-              </label>
-
-              <br />
-
-              <input
-                id="degree"
-                name="degree"
-                type="text"
-                value={formData.degree}
-                onChange={handleChange}
-                placeholder="e.g. B.Tech Computer Science"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="graduationYear">
-                Graduation Year
-              </label>
-
-              <br />
-
-              <input
-                id="graduationYear"
-                name="graduationYear"
-                type="number"
-                value={formData.graduationYear}
-                onChange={handleChange}
-                placeholder="e.g. 2027"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="cgpa">
-                CGPA
-              </label>
-
-              <br />
-
-              <input
-                id="cgpa"
-                name="cgpa"
-                type="number"
-                min="0"
-                max="10"
-                step="0.01"
-                value={formData.cgpa}
-                onChange={handleChange}
-                placeholder="e.g. 8.5"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="backlogs">
-                Backlogs
-              </label>
-
-              <br />
-
-              <input
-                id="backlogs"
-                name="backlogs"
-                type="number"
-                min="0"
-                value={formData.backlogs}
-                onChange={handleChange}
-                placeholder="e.g. 0"
-              />
-            </div>
-
-            <br />
-
-            <button
-              type="submit"
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Profile"}
-            </button>
-          </ProfileSection>
-
-          <ProfileSection title="Skills">
-            <SkillInput
-              skills={skills}
-              onChange={setSkills}
-            />
-
-            <br />
-
-            <button
-              type="button"
-              onClick={handleSkillsSave}
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Skills"}
-            </button>
-          </ProfileSection>
-
-          <ProfileSection title="Projects">
-            <div>
-              <label htmlFor="projectTitle">
-                Project Title
-              </label>
-
-              <br />
-
-              <input
-                id="projectTitle"
-                name="title"
-                type="text"
-                value={projectForm.title}
-                onChange={handleProjectChange}
-                placeholder="e.g. Placement Portal"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="projectDescription">
-                Description
-              </label>
-
-              <br />
-
-              <textarea
-                id="projectDescription"
-                name="description"
-                value={projectForm.description}
-                onChange={handleProjectChange}
-                placeholder="Describe your project"
-                rows="4"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="projectTechnologies">
-                Technologies
-              </label>
-
-              <br />
-
-              <input
-                id="projectTechnologies"
-                name="technologies"
-                type="text"
-                value={projectForm.technologies}
-                onChange={handleProjectChange}
-                placeholder="React, Node.js, MongoDB"
-              />
-            </div>
-
-            <br />
-
-            <button
-              type="button"
-              onClick={handleAddProject}
-            >
-              Add Project
-            </button>
-
-            <br />
-            <br />
-
-            {projects.length === 0 ? (
-              <p>No projects added yet.</p>
-            ) : (
-              <div>
-                {projects.map((project, index) => (
-                  <ProjectCard
-                    key={`${project.title}-${index}`}
-                    project={project}
-                    onRemove={handleRemoveProject}
-                  />
-                ))}
-              </div>
-            )}
-
-            <br />
-
-            <button
-              type="button"
-              onClick={handleProjectsSave}
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Projects"}
-            </button>
-          </ProfileSection>
-
-          <ProfileSection title="Certifications">
-            <div>
-              <label htmlFor="certificationName">
-                Certification Name
-              </label>
-
-              <br />
-
-              <input
-                id="certificationName"
-                name="name"
-                type="text"
-                value={certificationForm.name}
-                onChange={handleCertificationChange}
-                placeholder="e.g. AWS Cloud Practitioner"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="certificationIssuer">
-                Issuer
-              </label>
-
-              <br />
-
-              <input
-                id="certificationIssuer"
-                name="issuer"
-                type="text"
-                value={certificationForm.issuer}
-                onChange={handleCertificationChange}
-                placeholder="e.g. Amazon Web Services"
-              />
-            </div>
-
-            <br />
-
-            <div>
-              <label htmlFor="certificationYear">
-                Year
-              </label>
-
-              <br />
-
-              <input
-                id="certificationYear"
-                name="year"
-                type="number"
-                min="1900"
-                max="2100"
-                value={certificationForm.year}
-                onChange={handleCertificationChange}
-                placeholder="e.g. 2025"
-              />
-            </div>
-
-            <br />
-
-            <button
-              type="button"
-              onClick={handleAddCertification}
-            >
-              Add Certification
-            </button>
-
-            <br />
-            <br />
-
-            {certifications.length === 0 ? (
-              <p>No certifications added yet.</p>
-            ) : (
-              <div>
-                {certifications.map((certification, index) => (
-                  <CertificationCard
-                    key={`${certification.name}-${index}`}
-                    certification={certification}
-                    onRemove={handleRemoveCertification}
-                  />
-                ))}
-              </div>
-            )}
-
-            <br />
-
-            <button
-              type="button"
-              onClick={handleCertificationsSave}
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Save Certifications"}
-            </button>
-          </ProfileSection>
-
-          <ProfileSection title="Resume">
-            <div>
-              <label htmlFor="resume">
-                Upload Resume
-              </label>
-
-              <br />
-
-              <input
-                id="resume"
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleResumeChange}
-              />
-            </div>
-
-            <br />
-
-            {resumeFile && (
-              <p>
-                Selected file: {resumeFile.name}
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={handleResumeUpload}
-              disabled={resumeUploading}
-            >
-              {resumeUploading ? "Uploading..." : "Upload Resume"}
-            </button>
-          </ProfileSection>
+        <>
+          <ErrorMessage message={error} />
 
           {success && (
-            <p>{success}</p>
+            <div role="status" className="alert alert-success">
+              <p>{success}</p>
+            </div>
           )}
-        </form>
+
+          <form onSubmit={handleSubmit}>
+            <ProfileSection title="Academic Information">
+              <div className="field">
+                <label htmlFor="degree" className="field-label">
+                  Degree
+                </label>
+
+                <input
+                  id="degree"
+                  name="degree"
+                  type="text"
+                  className="input"
+                  value={formData.degree}
+                  onChange={handleChange}
+                  placeholder="e.g. B.Tech Computer Science"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="graduationYear" className="field-label">
+                  Graduation Year
+                </label>
+
+                <input
+                  id="graduationYear"
+                  name="graduationYear"
+                  type="number"
+                  className="input"
+                  value={formData.graduationYear}
+                  onChange={handleChange}
+                  placeholder="e.g. 2027"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="cgpa" className="field-label">
+                  CGPA
+                </label>
+
+                <input
+                  id="cgpa"
+                  name="cgpa"
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.01"
+                  className="input"
+                  value={formData.cgpa}
+                  onChange={handleChange}
+                  placeholder="e.g. 8.5"
+                />
+
+                <span className="field-hint">Must be between 0 and 10.</span>
+              </div>
+
+              <div className="field">
+                <label htmlFor="backlogs" className="field-label">
+                  Backlogs
+                </label>
+
+                <input
+                  id="backlogs"
+                  name="backlogs"
+                  type="number"
+                  min="0"
+                  className="input"
+                  value={formData.backlogs}
+                  onChange={handleChange}
+                  placeholder="e.g. 0"
+                />
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving && <span className="btn-spinner" />}
+                  {saving ? "Saving..." : "Save Profile"}
+                </button>
+              </div>
+            </ProfileSection>
+
+            <ProfileSection title="Skills">
+              <SkillInput skills={skills} onChange={setSkills} />
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSkillsSave}
+                  disabled={saving}
+                >
+                  {saving && <span className="btn-spinner" />}
+                  {saving ? "Saving..." : "Save Skills"}
+                </button>
+              </div>
+            </ProfileSection>
+
+            <ProfileSection title="Projects">
+              <div className="field">
+                <label htmlFor="projectTitle" className="field-label">
+                  Project Title
+                </label>
+
+                <input
+                  id="projectTitle"
+                  name="title"
+                  type="text"
+                  className="input"
+                  value={projectForm.title}
+                  onChange={handleProjectChange}
+                  placeholder="e.g. Placement Portal"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="projectDescription" className="field-label">
+                  Description
+                </label>
+
+                <textarea
+                  id="projectDescription"
+                  name="description"
+                  className="textarea"
+                  value={projectForm.description}
+                  onChange={handleProjectChange}
+                  placeholder="Describe your project"
+                  rows="4"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="projectTechnologies" className="field-label">
+                  Technologies
+                </label>
+
+                <input
+                  id="projectTechnologies"
+                  name="technologies"
+                  type="text"
+                  className="input"
+                  value={projectForm.technologies}
+                  onChange={handleProjectChange}
+                  placeholder="React, Node.js, MongoDB"
+                />
+
+                <span className="field-hint">
+                  Separate each technology with a comma.
+                </span>
+              </div>
+
+              <div className="form-actions" style={{ marginBottom: "var(--space-6)" }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleAddProject}
+                >
+                  Add Project
+                </button>
+              </div>
+
+              {projects.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No projects yet</h3>
+                  <p>Add a project above to showcase your work.</p>
+                </div>
+              ) : (
+                <div className="list-stack">
+                  {projects.map((project, index) => (
+                    <ProjectCard
+                      key={`${project.title}-${index}`}
+                      project={project}
+                      onRemove={handleRemoveProject}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleProjectsSave}
+                  disabled={saving}
+                >
+                  {saving && <span className="btn-spinner" />}
+                  {saving ? "Saving..." : "Save Projects"}
+                </button>
+              </div>
+            </ProfileSection>
+
+            <ProfileSection title="Certifications">
+              <div className="field">
+                <label htmlFor="certificationName" className="field-label">
+                  Certification Name
+                </label>
+
+                <input
+                  id="certificationName"
+                  name="name"
+                  type="text"
+                  className="input"
+                  value={certificationForm.name}
+                  onChange={handleCertificationChange}
+                  placeholder="e.g. AWS Cloud Practitioner"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="certificationIssuer" className="field-label">
+                  Issuer
+                </label>
+
+                <input
+                  id="certificationIssuer"
+                  name="issuer"
+                  type="text"
+                  className="input"
+                  value={certificationForm.issuer}
+                  onChange={handleCertificationChange}
+                  placeholder="e.g. Amazon Web Services"
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="certificationYear" className="field-label">
+                  Year
+                </label>
+
+                <input
+                  id="certificationYear"
+                  name="year"
+                  type="number"
+                  min="1900"
+                  max="2100"
+                  className="input"
+                  value={certificationForm.year}
+                  onChange={handleCertificationChange}
+                  placeholder="e.g. 2025"
+                />
+              </div>
+
+              <div className="form-actions" style={{ marginBottom: "var(--space-6)" }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleAddCertification}
+                >
+                  Add Certification
+                </button>
+              </div>
+
+              {certifications.length === 0 ? (
+                <div className="empty-state">
+                  <h3>No certifications yet</h3>
+                  <p>Add a certification above to strengthen your profile.</p>
+                </div>
+              ) : (
+                <div className="list-stack">
+                  {certifications.map((certification, index) => (
+                    <CertificationCard
+                      key={`${certification.name}-${index}`}
+                      certification={certification}
+                      onRemove={handleRemoveCertification}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleCertificationsSave}
+                  disabled={saving}
+                >
+                  {saving && <span className="btn-spinner" />}
+                  {saving ? "Saving..." : "Save Certifications"}
+                </button>
+              </div>
+            </ProfileSection>
+
+            <ProfileSection title="Resume">
+              <div className="field">
+                <label htmlFor="resume" className="field-label">
+                  Upload Resume
+                </label>
+
+                <input
+                  id="resume"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleResumeChange}
+                  style={fileInputStyle}
+                />
+
+                <span className="field-hint">Accepted formats: PDF, DOC, DOCX.</span>
+              </div>
+
+              {resumeFile && (
+                <p style={{ marginBottom: "var(--space-4)", fontSize: 14 }}>
+                  Selected file: <strong>{resumeFile.name}</strong>
+                </p>
+              )}
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleResumeUpload}
+                  disabled={resumeUploading}
+                >
+                  {resumeUploading && <span className="btn-spinner" />}
+                  {resumeUploading ? "Uploading..." : "Upload Resume"}
+                </button>
+              </div>
+            </ProfileSection>
+          </form>
+        </>
       )}
     </DashboardLayout>
   );

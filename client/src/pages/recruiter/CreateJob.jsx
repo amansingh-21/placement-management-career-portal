@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
 import { createJob } from "../../services/jobService.js";
 
 const CreateJob = () => {
@@ -26,8 +27,7 @@ const CreateJob = () => {
   const handleChange = (event) => {
     setForm({
       ...form,
-      [event.target.name]:
-        event.target.value,
+      [event.target.name]: event.target.value,
     });
   };
 
@@ -45,24 +45,15 @@ const CreateJob = () => {
         salary: Number(form.salary),
         deadline: form.deadline,
         eligibility: {
-          minCgpa:
-            form.minCgpa === ""
-              ? undefined
-              : Number(form.minCgpa),
+          minCgpa: form.minCgpa === "" ? undefined : Number(form.minCgpa),
 
           maxBacklogs:
-            form.maxBacklogs === ""
-              ? undefined
-              : Number(form.maxBacklogs),
+            form.maxBacklogs === "" ? undefined : Number(form.maxBacklogs),
 
           degree: form.degree || undefined,
 
           graduationYear:
-            form.graduationYear === ""
-              ? undefined
-              : Number(
-                  form.graduationYear
-                ),
+            form.graduationYear === "" ? undefined : Number(form.graduationYear),
 
           skills: form.skills
             .split(",")
@@ -74,8 +65,7 @@ const CreateJob = () => {
       navigate("/recruiter/jobs");
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to create job."
+        error.response?.data?.message || "Unable to create job."
       );
     } finally {
       setLoading(false);
@@ -83,129 +73,211 @@ const CreateJob = () => {
   };
 
   return (
-    <div>
-      <Navbar />
+    <DashboardLayout>
+      <Link to="/recruiter/jobs" className="back-link">
+        ← Back to Manage Jobs
+      </Link>
 
-      <main>
+      <div className="page-header">
         <h1>Create Job</h1>
+        <p>New jobs start as drafts. Submit for approval when you're ready.</p>
+      </div>
 
-        {error && <p>{error}</p>}
+      <div className="form-card">
+        <ErrorMessage message={error} />
 
         <form onSubmit={handleSubmit}>
-          <input
-            name="title"
-            placeholder="Job title"
-            value={form.title}
-            onChange={handleChange}
-            required
-          />
+          <div className="field">
+            <label htmlFor="title" className="field-label">
+              Job Title
+            </label>
 
-          <br />
+            <input
+              id="title"
+              name="title"
+              type="text"
+              className="input"
+              placeholder="e.g. Frontend Engineer"
+              value={form.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <textarea
-            name="description"
-            placeholder="Job description"
-            value={form.description}
-            onChange={handleChange}
-            required
-          />
+          <div className="field">
+            <label htmlFor="description" className="field-label">
+              Description
+            </label>
 
-          <br />
+            <textarea
+              id="description"
+              name="description"
+              className="textarea"
+              placeholder="Describe the role, responsibilities, and what you're looking for"
+              value={form.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <input
-            name="location"
-            placeholder="Location"
-            value={form.location}
-            onChange={handleChange}
-          />
+          <div className="field">
+            <label htmlFor="location" className="field-label">
+              Location
+            </label>
 
-          <br />
+            <input
+              id="location"
+              name="location"
+              type="text"
+              className="input"
+              placeholder="e.g. Bengaluru"
+              value={form.location}
+              onChange={handleChange}
+            />
+          </div>
 
-          <input
-            name="salary"
-            type="number"
-            min="0"
-            placeholder="Salary"
-            value={form.salary}
-            onChange={handleChange}
-            required
-          />
+          <div className="field">
+            <label htmlFor="salary" className="field-label">
+              Salary
+            </label>
 
-          <br />
+            <input
+              id="salary"
+              name="salary"
+              type="number"
+              min="0"
+              className="input"
+              placeholder="Annual salary in ₹"
+              value={form.salary}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <input
-            name="deadline"
-            type="datetime-local"
-            value={form.deadline}
-            onChange={handleChange}
-            required
-          />
+          <div className="field">
+            <label htmlFor="deadline" className="field-label">
+              Application Deadline
+            </label>
 
-          <h3>Eligibility</h3>
+            <input
+              id="deadline"
+              name="deadline"
+              type="datetime-local"
+              className="input"
+              value={form.deadline}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-          <input
-            name="minCgpa"
-            type="number"
-            min="0"
-            max="10"
-            step="0.1"
-            placeholder="Minimum CGPA"
-            value={form.minCgpa}
-            onChange={handleChange}
-          />
+          <h2 className="section-title" style={{ marginTop: "var(--space-7)" }}>
+            Eligibility
+          </h2>
 
-          <br />
+          <div className="field">
+            <label htmlFor="minCgpa" className="field-label">
+              Minimum CGPA
+            </label>
 
-          <input
-            name="maxBacklogs"
-            type="number"
-            min="0"
-            placeholder="Maximum Backlogs"
-            value={form.maxBacklogs}
-            onChange={handleChange}
-          />
+            <input
+              id="minCgpa"
+              name="minCgpa"
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              className="input"
+              placeholder="e.g. 7.5"
+              value={form.minCgpa}
+              onChange={handleChange}
+            />
+          </div>
 
-          <br />
+          <div className="field">
+            <label htmlFor="maxBacklogs" className="field-label">
+              Maximum Backlogs
+            </label>
 
-          <input
-            name="degree"
-            placeholder="Degree"
-            value={form.degree}
-            onChange={handleChange}
-          />
+            <input
+              id="maxBacklogs"
+              name="maxBacklogs"
+              type="number"
+              min="0"
+              className="input"
+              placeholder="e.g. 0"
+              value={form.maxBacklogs}
+              onChange={handleChange}
+            />
+          </div>
 
-          <br />
+          <div className="field">
+            <label htmlFor="degree" className="field-label">
+              Degree
+            </label>
 
-          <input
-            name="graduationYear"
-            type="number"
-            placeholder="Graduation Year"
-            value={form.graduationYear}
-            onChange={handleChange}
-          />
+            <input
+              id="degree"
+              name="degree"
+              type="text"
+              className="input"
+              placeholder="e.g. B.E. Computer Science"
+              value={form.degree}
+              onChange={handleChange}
+            />
+          </div>
 
-          <br />
+          <div className="field">
+            <label htmlFor="graduationYear" className="field-label">
+              Graduation Year
+            </label>
 
-          <input
-            name="skills"
-            placeholder="Skills separated by commas"
-            value={form.skills}
-            onChange={handleChange}
-          />
+            <input
+              id="graduationYear"
+              name="graduationYear"
+              type="number"
+              className="input"
+              placeholder="e.g. 2026"
+              value={form.graduationYear}
+              onChange={handleChange}
+            />
+          </div>
 
-          <br />
+          <div className="field">
+            <label htmlFor="skills" className="field-label">
+              Skills
+            </label>
 
-          <button
-            type="submit"
-            disabled={loading}
-          >
-            {loading
-              ? "Creating..."
-              : "Create Job"}
-          </button>
+            <input
+              id="skills"
+              name="skills"
+              type="text"
+              className="input"
+              placeholder="React, Node.js, MongoDB"
+              value={form.skills}
+              onChange={handleChange}
+            />
+
+            <span className="field-hint">Separate each skill with a comma.</span>
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading && <span className="btn-spinner" />}
+              {loading ? "Creating..." : "Create Job"}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => navigate("/recruiter/jobs")}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

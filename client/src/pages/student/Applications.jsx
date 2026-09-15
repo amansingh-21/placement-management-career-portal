@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import Navbar from "../../components/Navbar.jsx";
-import {
-  getMyApplications,
-} from "../../services/applicationService.js";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
+import StatusBadge from "../../components/StatusBadge.jsx";
+import { getMyApplications } from "../../services/applicationService.js";
 
 const Applications = () => {
   const [applications, setApplications] = useState([]);
@@ -22,8 +23,7 @@ const Applications = () => {
         setApplications(data);
       } catch (error) {
         setError(
-          error.response?.data?.message ||
-            "Unable to load applications."
+          error.response?.data?.message || "Unable to load applications."
         );
       } finally {
         setLoading(false);
@@ -35,93 +35,70 @@ const Applications = () => {
 
   if (loading) {
     return (
-      <div>
-        <Navbar />
-
-        <main>
-          <p>Loading applications...</p>
-        </main>
-      </div>
+      <DashboardLayout>
+        <Loader message="Loading applications..." />
+      </DashboardLayout>
     );
   }
 
   return (
-    <div>
-      <Navbar />
-
-      <main>
+    <DashboardLayout>
+      <div className="page-header">
         <h1>My Applications</h1>
+        <p>Track the status of every job you've applied to.</p>
+      </div>
 
-        {error && <p>{error}</p>}
+      <ErrorMessage message={error} />
 
-        {!error && applications.length === 0 && (
-          <div>
-            <p>You have not applied to any jobs yet.</p>
+      {!error && applications.length === 0 && (
+        <div className="empty-state">
+          <h3>No applications yet</h3>
+          <p>You have not applied to any jobs yet.</p>
 
-            <Link to="/student/jobs">
-              Browse Jobs
-            </Link>
-          </div>
-        )}
+          <Link to="/student/jobs" className="btn btn-primary">
+            Browse Jobs
+          </Link>
+        </div>
+      )}
 
-        {applications.length > 0 && (
-          <div>
-            {applications.map((application) => {
-              const job = application.jobId;
+      {applications.length > 0 && (
+        <div className="list-stack">
+          {applications.map((application) => {
+            const job = application.jobId;
 
-              return (
-                <div key={application._id}>
-                  <hr />
+            return (
+              <div className="list-item" key={application._id}>
+                <div className="list-item-header">
+                  <h2>{job?.title || "Job unavailable"}</h2>
+                  <StatusBadge status={application.status} />
+                </div>
 
-                  <h2>
-                    {job?.title || "Job unavailable"}
-                  </h2>
-
-                  <p>
-                    Company:{" "}
-                    {job?.companyId?.name ||
-                      "Unknown"}
-                  </p>
-
-                  <p>
-                    Location:{" "}
-                    {job?.location ||
-                      "Not specified"}
-                  </p>
-
-                  <p>
-                    Salary: ₹
-                    {job?.salary ?? "Not specified"}
-                  </p>
-
-                  <p>
+                <div className="list-item-meta">
+                  <span>Company: {job?.companyId?.name || "Unknown"}</span>
+                  <span>Location: {job?.location || "Not specified"}</span>
+                  <span>Salary: ₹{job?.salary ?? "Not specified"}</span>
+                  <span>
                     Deadline:{" "}
                     {job?.deadline
-                      ? new Date(
-                          job.deadline
-                        ).toLocaleDateString()
+                      ? new Date(job.deadline).toLocaleDateString()
                       : "Not specified"}
-                  </p>
+                  </span>
+                </div>
 
-                  <p>
-                    Status:{" "}
-                    <strong>
-                      {application.status}
-                    </strong>
-                  </p>
-
+                <div className="list-item-footer">
                   <Link
                     to={`/student/applications/${application._id}`}
+                    className="btn btn-secondary btn-sm"
                   >
                     View Details
                   </Link>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </main>
-    </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 

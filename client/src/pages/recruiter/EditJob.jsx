@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
 
-import {
-  getMyJobById,
-  updateJob,
-} from "../../services/jobService.js";
+import { getMyJobById, updateJob } from "../../services/jobService.js";
 
 const EditJob = () => {
   const { id } = useParams();
@@ -30,6 +26,7 @@ const EditJob = () => {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadJob = async () => {
@@ -38,35 +35,21 @@ const EditJob = () => {
 
         setForm({
           title: job.title || "",
-          description:
-            job.description || "",
+          description: job.description || "",
           location: job.location || "",
           salary: job.salary ?? "",
           deadline: job.deadline
-            ? new Date(job.deadline)
-                .toISOString()
-                .slice(0, 16)
+            ? new Date(job.deadline).toISOString().slice(0, 16)
             : "",
-          minCgpa:
-            job.eligibility?.minCgpa ??
-            "",
-          maxBacklogs:
-            job.eligibility?.maxBacklogs ??
-            "",
-          degree:
-            job.eligibility?.degree || "",
-          graduationYear:
-            job.eligibility
-              ?.graduationYear || "",
-          skills:
-            job.eligibility?.skills?.join(
-              ", "
-            ) || "",
+          minCgpa: job.eligibility?.minCgpa ?? "",
+          maxBacklogs: job.eligibility?.maxBacklogs ?? "",
+          degree: job.eligibility?.degree || "",
+          graduationYear: job.eligibility?.graduationYear || "",
+          skills: job.eligibility?.skills?.join(", ") || "",
         });
       } catch (error) {
         setError(
-          error.response?.data?.message ||
-            "Unable to load job."
+          error.response?.data?.message || "Unable to load job."
         );
       } finally {
         setLoading(false);
@@ -79,8 +62,7 @@ const EditJob = () => {
   const handleChange = (event) => {
     setForm({
       ...form,
-      [event.target.name]:
-        event.target.value,
+      [event.target.name]: event.target.value,
     });
   };
 
@@ -89,6 +71,7 @@ const EditJob = () => {
 
     try {
       setError("");
+      setSaving(true);
 
       await updateJob(id, {
         title: form.title,
@@ -97,24 +80,15 @@ const EditJob = () => {
         salary: Number(form.salary),
         deadline: form.deadline,
         eligibility: {
-          minCgpa:
-            form.minCgpa === ""
-              ? undefined
-              : Number(form.minCgpa),
+          minCgpa: form.minCgpa === "" ? undefined : Number(form.minCgpa),
 
           maxBacklogs:
-            form.maxBacklogs === ""
-              ? undefined
-              : Number(form.maxBacklogs),
+            form.maxBacklogs === "" ? undefined : Number(form.maxBacklogs),
 
           degree: form.degree || undefined,
 
           graduationYear:
-            form.graduationYear === ""
-              ? undefined
-              : Number(
-                  form.graduationYear
-                ),
+            form.graduationYear === "" ? undefined : Number(form.graduationYear),
 
           skills: form.skills
             .split(",")
@@ -126,36 +100,38 @@ const EditJob = () => {
       navigate("/recruiter/jobs");
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to update job."
+        error.response?.data?.message || "Unable to update job."
       );
+    } finally {
+      setSaving(false);
     }
   };
 
   if (loading) {
     return (
-      <div>
-        <Navbar />
-
-        <main>
-          <p>Loading job...</p>
-        </main>
-      </div>
+      <DashboardLayout>
+        <Loader message="Loading job..." />
+      </DashboardLayout>
     );
   }
 
   return (
-    <div>
-      <Navbar />
+    <DashboardLayout>
+      <Link to="/recruiter/jobs" className="back-link">
+        ← Back to Manage Jobs
+      </Link>
 
-      <main>
+      <div className="page-header">
         <h1>Edit Job</h1>
+        <p>Changes apply to the draft until it's submitted for approval.</p>
+      </div>
 
-        {error && <p>{error}</p>}
+      <div className="form-card">
+        <ErrorMessage message={error} />
 
         <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="title">
+          <div className="field">
+            <label htmlFor="title" className="field-label">
               Job Title
             </label>
 
@@ -163,28 +139,30 @@ const EditJob = () => {
               id="title"
               name="title"
               type="text"
+              className="input"
               value={form.title}
               onChange={handleChange}
               required
             />
           </div>
 
-          <div>
-            <label htmlFor="description">
+          <div className="field">
+            <label htmlFor="description" className="field-label">
               Description
             </label>
 
             <textarea
               id="description"
               name="description"
+              className="textarea"
               value={form.description}
               onChange={handleChange}
               required
             />
           </div>
 
-          <div>
-            <label htmlFor="location">
+          <div className="field">
+            <label htmlFor="location" className="field-label">
               Location
             </label>
 
@@ -192,13 +170,14 @@ const EditJob = () => {
               id="location"
               name="location"
               type="text"
+              className="input"
               value={form.location}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="salary">
+          <div className="field">
+            <label htmlFor="salary" className="field-label">
               Salary
             </label>
 
@@ -207,13 +186,14 @@ const EditJob = () => {
               name="salary"
               type="number"
               min="0"
+              className="input"
               value={form.salary}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="deadline">
+          <div className="field">
+            <label htmlFor="deadline" className="field-label">
               Application Deadline
             </label>
 
@@ -221,16 +201,19 @@ const EditJob = () => {
               id="deadline"
               name="deadline"
               type="datetime-local"
+              className="input"
               value={form.deadline}
               onChange={handleChange}
               required
             />
           </div>
 
-          <h2>Eligibility</h2>
+          <h2 className="section-title" style={{ marginTop: "var(--space-7)" }}>
+            Eligibility
+          </h2>
 
-          <div>
-            <label htmlFor="minCgpa">
+          <div className="field">
+            <label htmlFor="minCgpa" className="field-label">
               Minimum CGPA
             </label>
 
@@ -241,13 +224,14 @@ const EditJob = () => {
               step="0.01"
               min="0"
               max="10"
+              className="input"
               value={form.minCgpa}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="maxBacklogs">
+          <div className="field">
+            <label htmlFor="maxBacklogs" className="field-label">
               Maximum Backlogs
             </label>
 
@@ -256,13 +240,14 @@ const EditJob = () => {
               name="maxBacklogs"
               type="number"
               min="0"
+              className="input"
               value={form.maxBacklogs}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="degree">
+          <div className="field">
+            <label htmlFor="degree" className="field-label">
               Degree
             </label>
 
@@ -270,13 +255,14 @@ const EditJob = () => {
               id="degree"
               name="degree"
               type="text"
+              className="input"
               value={form.degree}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="graduationYear">
+          <div className="field">
+            <label htmlFor="graduationYear" className="field-label">
               Graduation Year
             </label>
 
@@ -284,13 +270,14 @@ const EditJob = () => {
               id="graduationYear"
               name="graduationYear"
               type="number"
+              className="input"
               value={form.graduationYear}
               onChange={handleChange}
             />
           </div>
 
-          <div>
-            <label htmlFor="skills">
+          <div className="field">
+            <label htmlFor="skills" className="field-label">
               Skills
             </label>
 
@@ -298,27 +285,33 @@ const EditJob = () => {
               id="skills"
               name="skills"
               type="text"
+              className="input"
               value={form.skills}
               onChange={handleChange}
               placeholder="React, Node.js, MongoDB"
             />
+
+            <span className="field-hint">Separate each skill with a comma.</span>
           </div>
 
-          <button type="submit">
-            Update Job
-          </button>
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving && <span className="btn-spinner" />}
+              {saving ? "Saving..." : "Update Job"}
+            </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              navigate("/recruiter/jobs")
-            }
-          >
-            Cancel
-          </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => navigate("/recruiter/jobs")}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+          </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

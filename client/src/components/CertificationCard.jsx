@@ -1,29 +1,22 @@
-const CertificationCard = ({
-  certification,
-  onRemove,
-}) => {
+const CertificationCard = ({ certification, onRemove }) => {
   return (
-    <div>
-      <h3>{certification.name}</h3>
+    <div className="list-item">
+      <div className="list-item-header">
+        <h3>{certification.name}</h3>
 
-      <p>
-        <strong>Issuer:</strong>{" "}
-        {certification.issuer}
-      </p>
+        <button type="button" className="btn btn-outline btn-sm" onClick={() => onRemove(certification)}>
+          Remove
+        </button>
+      </div>
 
-      <p>
-        <strong>Year:</strong>{" "}
-        {certification.year}
-      </p>
-
-      <button
-        type="button"
-        onClick={() =>
-          onRemove(certification)
-        }
-      >
-        Remove
-      </button>
+      <div className="list-item-meta">
+        <p>
+          <strong>Issuer:</strong> {certification.issuer}
+        </p>
+        <p>
+          <strong>Year:</strong> {certification.year}
+        </p>
+      </div>
     </div>
   );
 };

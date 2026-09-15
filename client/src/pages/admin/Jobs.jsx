@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
+import StatusBadge from "../../components/StatusBadge.jsx";
 
 import {
   getPendingJobs,
@@ -23,8 +26,7 @@ const AdminJobs = () => {
       setJobs(data);
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to load pending jobs."
+        error.response?.data?.message || "Unable to load pending jobs."
       );
     } finally {
       setLoading(false);
@@ -44,8 +46,7 @@ const AdminJobs = () => {
       await fetchJobs();
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to approve job."
+        error.response?.data?.message || "Unable to approve job."
       );
     }
   };
@@ -59,98 +60,80 @@ const AdminJobs = () => {
       await fetchJobs();
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to reject job."
+        error.response?.data?.message || "Unable to reject job."
       );
     }
   };
 
   return (
-    <div>
-      <Navbar />
-
-      <main>
+    <DashboardLayout>
+      <div className="page-header">
         <h1>Job Approvals</h1>
+        <p>Jobs submitted by recruiters that are waiting for review.</p>
+      </div>
 
-        {loading && (
-          <p>Loading pending jobs...</p>
-        )}
+      {loading && <Loader message="Loading pending jobs..." />}
 
-        {error && <p>{error}</p>}
+      <ErrorMessage message={error} />
 
-        {!loading &&
-          !error &&
-          jobs.length === 0 && (
-            <p>No pending jobs found.</p>
-          )}
+      {!loading && !error && jobs.length === 0 && (
+        <div className="empty-state">
+          <h3>Nothing to review</h3>
+          <p>No jobs are waiting for approval.</p>
+        </div>
+      )}
 
-        {!loading &&
-          !error &&
-          jobs.map((job) => (
-            <article key={job._id}>
-              <h2>{job.title}</h2>
+      {!loading && !error && jobs.length > 0 && (
+        <div className="list-stack">
+          {jobs.map((job) => (
+            <article className="list-item" key={job._id}>
+              <div className="list-item-header">
+                <h2>{job.title}</h2>
 
-              <p>
-                Company:{" "}
-                {job.companyId?.name ||
-                  "Unknown"}
-              </p>
+                <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+                  <StatusBadge status={job.status} />
+                  <StatusBadge status={job.approvalStatus} />
+                </div>
+              </div>
 
-              <p>
-                Approval Status:{" "}
-                {job.approvalStatus}
-              </p>
+              <div className="list-item-meta">
+                <span>Company: {job.companyId?.name || "Unknown"}</span>
+                <span>Location: {job.location || "Not specified"}</span>
+                <span>Salary: ₹{job.salary}</span>
+                <span>
+                  Deadline:{" "}
+                  {job.deadline
+                    ? new Date(job.deadline).toLocaleDateString()
+                    : "Not specified"}
+                </span>
+              </div>
 
-              <p>
-                Job Status: {job.status}
-              </p>
+              <p>{job.description}</p>
 
-              <p>
-                Description:{" "}
-                {job.description}
-              </p>
+              <div className="list-item-footer">
+                <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleApprove(job._id)}
+                  >
+                    Approve
+                  </button>
 
-              <p>
-                Location:{" "}
-                {job.location || "Not specified"}
-              </p>
-
-              <p>
-                Salary: ₹{job.salary}
-              </p>
-
-              <p>
-                Deadline:{" "}
-                {new Date(
-                  job.deadline
-                ).toLocaleDateString()}
-              </p>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleApprove(job._id)
-                }
-              >
-                Approve
-              </button>
-
-              {" "}
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleReject(job._id)
-                }
-              >
-                Reject
-              </button>
-
-              <hr />
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => handleReject(job._id)}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
             </article>
           ))}
-      </main>
-    </div>
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 

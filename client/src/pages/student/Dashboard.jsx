@@ -2,38 +2,31 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
+import StatusBadge from "../../components/StatusBadge.jsx";
 import api from "../../services/api.js";
-
-import "../../styles/dashboard.css";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const [dashboard, setDashboard] =
-    useState(null);
+  const [dashboard, setDashboard] = useState(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   const fetchDashboard = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await api.get(
-        "/dashboard/student"
-      );
+      const response = await api.get("/dashboard/student");
 
-      setDashboard(
-        response.data.dashboard
-      );
+      setDashboard(response.data.dashboard);
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to load dashboard."
+        error.response?.data?.message || "Unable to load dashboard."
       );
     } finally {
       setLoading(false);
@@ -47,10 +40,11 @@ const Dashboard = () => {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="dashboard-loading">
+        <div className="page-header">
           <h1>Student Dashboard</h1>
-          <p>Loading dashboard...</p>
         </div>
+
+        <Loader message="Loading dashboard..." />
       </DashboardLayout>
     );
   }
@@ -58,278 +52,223 @@ const Dashboard = () => {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="dashboard-error">
+        <div className="page-header">
           <h1>Student Dashboard</h1>
-          <p>{error}</p>
-
-          <button
-            type="button"
-            className="dashboard-button"
-            onClick={fetchDashboard}
-          >
-            Try Again
-          </button>
         </div>
+
+        <ErrorMessage message={error} />
+
+        <button type="button" className="btn btn-primary" onClick={fetchDashboard}>
+          Try Again
+        </button>
       </DashboardLayout>
     );
   }
 
-  const profile =
-    dashboard?.profile || {};
+  const profile = dashboard?.profile || {};
 
-  const metrics =
-    dashboard?.metrics || {};
+  const metrics = dashboard?.metrics || {};
 
-  const upcomingInterviews =
-    dashboard?.upcomingInterviews || [];
+  const upcomingInterviews = dashboard?.upcomingInterviews || [];
 
-  const recentApplications =
-    dashboard?.recentApplications || [];
+  const recentApplications = dashboard?.recentApplications || [];
 
   return (
     <DashboardLayout>
-      <div className="dashboard-page">
-        <main className="dashboard-main">
-          <header className="dashboard-header">
-            <h1>Student Dashboard</h1>
+      <div className="page-header">
+        <h1>Student Dashboard</h1>
+        <p>Track your placement progress, applications, and interviews.</p>
+      </div>
 
-            <p>
-              Track your placement progress,
-              applications, and interviews.
+      <section className="section">
+        <div className="page-header-row section-title">
+          <h2>Profile</h2>
+
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => navigate("/student/profile")}
+          >
+            Edit Profile
+          </button>
+        </div>
+
+        <div className="stat-grid">
+          <div className="stat-card">
+            <p className="stat-value">{profile.profileCompletion ?? 0}%</p>
+            <p className="stat-label">Profile Completion</p>
+          </div>
+
+          <div className="stat-card">
+            <p className="stat-value" style={{ fontSize: 18 }}>
+              {profile.degree || "Not available"}
             </p>
-          </header>
+            <p className="stat-label">Degree</p>
+          </div>
 
-          <section className="dashboard-section">
-            <h2>Profile</h2>
+          <div className="stat-card">
+            <p className="stat-value" style={{ fontSize: 18 }}>
+              {profile.graduationYear || "Not available"}
+            </p>
+            <p className="stat-label">Graduation Year</p>
+          </div>
 
-            <div className="dashboard-info">
-              <div className="dashboard-info-item">
-                <p>Profile Completion</p>
-                <h3>
-                  {profile.profileCompletion ?? 0}%
-                </h3>
-              </div>
+          <div className="stat-card">
+            <p className="stat-value" style={{ fontSize: 18 }}>
+              {profile.cgpa ?? "Not available"}
+            </p>
+            <p className="stat-label">CGPA</p>
+          </div>
 
-              <div className="dashboard-info-item">
-                <p>Degree</p>
-                <h3>
-                  {profile.degree ||
-                    "Not available"}
-                </h3>
-              </div>
+          <div className="stat-card">
+            <p className="stat-value" style={{ fontSize: 18 }}>
+              {profile.backlogs ?? 0}
+            </p>
+            <p className="stat-label">Backlogs</p>
+          </div>
+        </div>
+      </section>
 
-              <div className="dashboard-info-item">
-                <p>Graduation Year</p>
-                <h3>
-                  {profile.graduationYear ||
-                    "Not available"}
-                </h3>
-              </div>
+      <section className="section">
+        <div className="page-header-row section-title">
+          <h2>Application Summary</h2>
 
-              <div className="dashboard-info-item">
-                <p>CGPA</p>
-                <h3>
-                  {profile.cgpa ??
-                    "Not available"}
-                </h3>
-              </div>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => navigate("/student/applications")}
+          >
+            View Applications
+          </button>
+        </div>
 
-              <div className="dashboard-info-item">
-                <p>Backlogs</p>
-                <h3>
-                  {profile.backlogs ?? 0}
-                </h3>
-              </div>
-            </div>
-          </section>
+        <div className="stat-grid">
+          <div className="stat-card">
+            <p className="stat-value">{metrics.totalApplications ?? 0}</p>
+            <p className="stat-label">Total Applications</p>
+          </div>
 
-          <section className="dashboard-section">
-            <h2>Application Summary</h2>
+          <div className="stat-card">
+            <p className="stat-value">{metrics.shortlistedApplications ?? 0}</p>
+            <p className="stat-label">Shortlisted</p>
+          </div>
 
-            <div className="dashboard-cards">
-              <div className="dashboard-card">
-                <h3>
-                  {metrics.totalApplications ??
-                    0}
-                </h3>
-                <p>Total Applications</p>
-              </div>
+          <div className="stat-card">
+            <p className="stat-value">{metrics.interviewApplications ?? 0}</p>
+            <p className="stat-label">Interviews</p>
+          </div>
 
-              <div className="dashboard-card">
-                <h3>
-                  {metrics.shortlistedApplications ??
-                    0}
-                </h3>
-                <p>Shortlisted</p>
-              </div>
+          <div className="stat-card">
+            <p className="stat-value">{metrics.selectedApplications ?? 0}</p>
+            <p className="stat-label">Selected</p>
+          </div>
 
-              <div className="dashboard-card">
-                <h3>
-                  {metrics.interviewApplications ??
-                    0}
-                </h3>
-                <p>Interviews</p>
-              </div>
+          <div className="stat-card">
+            <p className="stat-value">{metrics.rejectedApplications ?? 0}</p>
+            <p className="stat-label">Rejected</p>
+          </div>
+        </div>
+      </section>
 
-              <div className="dashboard-card">
-                <h3>
-                  {metrics.selectedApplications ??
-                    0}
-                </h3>
-                <p>Selected</p>
-              </div>
+      <section className="section">
+        <div className="page-header-row section-title">
+          <h2>Upcoming Interviews</h2>
 
-              <div className="dashboard-card">
-                <h3>
-                  {metrics.rejectedApplications ??
-                    0}
-                </h3>
-                <p>Rejected</p>
-              </div>
-            </div>
-          </section>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => navigate("/student/interviews")}
+          >
+            View Interviews
+          </button>
+        </div>
 
-          <section className="dashboard-section">
-            <h2>Upcoming Interviews</h2>
+        {upcomingInterviews.length === 0 ? (
+          <div className="empty-state">
+            <h3>No upcoming interviews</h3>
+            <p>Interviews scheduled by recruiters will appear here.</p>
+          </div>
+        ) : (
+          <div className="list-stack">
+            {upcomingInterviews.map((interview) => {
+              const application = interview.applicationId;
 
-            {upcomingInterviews.length ===
-            0 ? (
-              <div className="dashboard-empty">
-                <p>
-                  No upcoming interviews.
-                </p>
-              </div>
-            ) : (
-              <div className="dashboard-list">
-                {upcomingInterviews.map(
-                  (interview) => {
-                    const application =
-                      interview.applicationId;
+              const job = application?.jobId;
 
-                    const job =
-                      application?.jobId;
+              const company = job?.companyId;
 
-                    const company =
-                      job?.companyId;
+              return (
+                <div className="list-item" key={interview._id}>
+                  <div className="list-item-header">
+                    <h3>{job?.title || "Job title unavailable"}</h3>
+                    <StatusBadge status={interview.status} />
+                  </div>
 
-                    return (
-                      <div
-                        className="dashboard-list-item"
-                        key={interview._id}
-                      >
-                        <h3>
-                          {job?.title ||
-                            "Job title unavailable"}
-                        </h3>
+                  <div className="list-item-meta">
+                    <span>Company: {company?.name || "Company unavailable"}</span>
+                    <span>
+                      Date:{" "}
+                      {interview.scheduledAt
+                        ? new Date(interview.scheduledAt).toLocaleString()
+                        : "Date unavailable"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-                        <p>
-                          Company:{" "}
-                          {company?.name ||
-                            "Company unavailable"}
-                        </p>
+      <section className="section">
+        <h2 className="section-title">Recent Applications</h2>
 
-                        <p>
-                          Date:{" "}
-                          {interview.scheduledAt
-                            ? new Date(
-                                interview.scheduledAt
-                              ).toLocaleString()
-                            : "Date unavailable"}
-                        </p>
-
-                        <span className="dashboard-status">
-                          {interview.status}
-                        </span>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            )}
+        {recentApplications.length === 0 ? (
+          <div className="empty-state">
+            <h3>No applications yet</h3>
+            <p>Apply to a job to start tracking your progress.</p>
 
             <button
               type="button"
-              className="dashboard-button"
-              onClick={() =>
-                navigate(
-                  "/student/interviews"
-                )
-              }
+              className="btn btn-primary"
+              onClick={() => navigate("/student/jobs")}
             >
-              View Interviews
+              Browse Jobs
             </button>
-          </section>
+          </div>
+        ) : (
+          <div className="list-stack">
+            {recentApplications.map((application) => {
+              const job = application.jobId;
 
-          <section className="dashboard-section">
-            <h2>Recent Applications</h2>
+              const company = job?.companyId;
 
-            {recentApplications.length ===
-            0 ? (
-              <div className="dashboard-empty">
-                <p>
-                  No applications yet.
-                </p>
-              </div>
-            ) : (
-              <div className="dashboard-list">
-                {recentApplications.map(
-                  (application) => {
-                    const job =
-                      application.jobId;
+              return (
+                <div className="list-item" key={application._id}>
+                  <div className="list-item-header">
+                    <h3>{job?.title || "Job title unavailable"}</h3>
+                    <StatusBadge status={application.status} />
+                  </div>
 
-                    const company =
-                      job?.companyId;
-
-                    return (
-                      <div
-                        className="dashboard-list-item"
-                        key={application._id}
-                      >
-                        <h3>
-                          {job?.title ||
-                            "Job title unavailable"}
-                        </h3>
-
-                        <p>
-                          Company:{" "}
-                          {company?.name ||
-                            "Company unavailable"}
-                        </p>
-
-                        <p>
-                          Location:{" "}
-                          {job?.location ||
-                            "Not specified"}
-                        </p>
-
-                        <p>
-                          Salary:{" "}
-                          {job?.salary != null
-                            ? job.salary
-                            : "Not specified"}
-                        </p>
-
-                        <span className="dashboard-status">
-                          {application.status}
-                        </span>
-
-                        <p>
-                          Applied:{" "}
-                          {application.createdAt
-                            ? new Date(
-                                application.createdAt
-                              ).toLocaleString()
-                            : "Date unavailable"}
-                        </p>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            )}
-          </section>
-        </main>
-      </div>
+                  <div className="list-item-meta">
+                    <span>Company: {company?.name || "Company unavailable"}</span>
+                    <span>Location: {job?.location || "Not specified"}</span>
+                    <span>
+                      Salary: {job?.salary != null ? job.salary : "Not specified"}
+                    </span>
+                    <span>
+                      Applied:{" "}
+                      {application.createdAt
+                        ? new Date(application.createdAt).toLocaleString()
+                        : "Date unavailable"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </DashboardLayout>
   );
 };

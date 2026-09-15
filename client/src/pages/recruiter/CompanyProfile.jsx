@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
+import StatusBadge from "../../components/StatusBadge.jsx";
 
 import {
   createCompany,
@@ -34,8 +37,7 @@ const CompanyProfile = () => {
           setName("");
         } else {
           setError(
-            error.response?.data?.message ||
-              "Unable to load company profile."
+            error.response?.data?.message || "Unable to load company profile."
           );
         }
       } finally {
@@ -82,8 +84,7 @@ const CompanyProfile = () => {
       );
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to save company."
+        error.response?.data?.message || "Unable to save company."
       );
     } finally {
       setSaving(false);
@@ -91,67 +92,63 @@ const CompanyProfile = () => {
   };
 
   return (
-    <div>
-      <Navbar />
-
-      <main>
+    <DashboardLayout>
+      <div className="page-header">
         <h1>Company Profile</h1>
+        <p>Your company details are shown to students on every job you post.</p>
+      </div>
 
-        {loading && <p>Loading company profile...</p>}
+      {loading && <Loader message="Loading company profile..." />}
 
-        {!loading && error && (
-          <p>{error}</p>
-        )}
+      {!loading && (
+        <div className="form-card">
+          <ErrorMessage message={error} />
 
-        {!loading && (
+          {success && (
+            <div role="status" className="alert alert-success">
+              <p>{success}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="companyName">
+            <div className="field">
+              <label htmlFor="companyName" className="field-label">
                 Company Name
               </label>
-
-              <br />
 
               <input
                 id="companyName"
                 type="text"
+                className="input"
                 value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
+                onChange={(event) => setName(event.target.value)}
                 placeholder="Enter company name"
               />
             </div>
 
-            <br />
-
             {company && (
-              <div>
-                <p>
-                  <strong>Approval Status:</strong>{" "}
-                  {company.approvalStatus}
-                </p>
+              <div className="field">
+                <span className="field-label">Approval Status</span>
+                <div>
+                  <StatusBadge status={company.approvalStatus} />
+                </div>
               </div>
             )}
 
-            <br />
-
-            <button
-              type="submit"
-              disabled={saving}
-            >
-              {saving
-                ? "Saving..."
-                : company
-                ? "Update Company"
-                : "Create Company"}
-            </button>
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary" disabled={saving}>
+                {saving && <span className="btn-spinner" />}
+                {saving
+                  ? "Saving..."
+                  : company
+                  ? "Update Company"
+                  : "Create Company"}
+              </button>
+            </div>
           </form>
-        )}
-
-        {success && <p>{success}</p>}
-      </main>
-    </div>
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
+import StatusBadge from "../../components/StatusBadge.jsx";
 
 import {
   getCompanies,
@@ -13,8 +16,7 @@ const Companies = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [actionLoading, setActionLoading] =
-    useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchCompanies = async () => {
     try {
@@ -26,8 +28,7 @@ const Companies = () => {
       setCompanies(data);
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to load companies."
+        error.response?.data?.message || "Unable to load companies."
       );
     } finally {
       setLoading(false);
@@ -38,24 +39,17 @@ const Companies = () => {
     fetchCompanies();
   }, [status]);
 
-  const handleApproval = async (
-    companyId,
-    approvalStatus
-  ) => {
+  const handleApproval = async (companyId, approvalStatus) => {
     try {
       setActionLoading(true);
       setError("");
 
-      await updateCompanyApproval(
-        companyId,
-        approvalStatus
-      );
+      await updateCompanyApproval(companyId, approvalStatus);
 
       await fetchCompanies();
     } catch (error) {
       setError(
-        error.response?.data?.message ||
-          "Unable to update company approval."
+        error.response?.data?.message || "Unable to update company approval."
       );
     } finally {
       setActionLoading(false);
@@ -63,110 +57,85 @@ const Companies = () => {
   };
 
   return (
-    <div>
-      <Navbar />
-
-      <main>
+    <DashboardLayout>
+      <div className="page-header">
         <h1>Company Management</h1>
+        <p>Review and approve companies registered by recruiters.</p>
+      </div>
 
-        <div>
-          <label htmlFor="status">
+      <div className="search-bar">
+        <div className="field" style={{ marginBottom: 0, minWidth: 220 }}>
+          <label htmlFor="status" className="field-label">
             Filter by Status
           </label>
 
-          <br />
-
           <select
             id="status"
+            className="select"
             value={status}
-            onChange={(event) =>
-              setStatus(event.target.value)
-            }
+            onChange={(event) => setStatus(event.target.value)}
           >
             <option value="">All</option>
-            <option value="PENDING">
-              Pending
-            </option>
-            <option value="APPROVED">
-              Approved
-            </option>
-            <option value="REJECTED">
-              Rejected
-            </option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
           </select>
         </div>
+      </div>
 
-        <br />
+      {loading && <Loader message="Loading companies..." />}
 
-        {loading && <p>Loading companies...</p>}
+      <ErrorMessage message={error} />
 
-        {!loading && error && (
-          <p>{error}</p>
-        )}
+      {!loading && !error && companies.length === 0 && (
+        <div className="empty-state">
+          <h3>No companies found</h3>
+          <p>Try a different status filter.</p>
+        </div>
+      )}
 
-        {!loading && !error && companies.length === 0 && (
-          <p>No companies found.</p>
-        )}
+      {!loading && companies.length > 0 && (
+        <div className="list-stack">
+          {companies.map((company) => (
+            <section className="list-item" key={company._id}>
+              <div className="list-item-header">
+                <h2>{company.name}</h2>
+                <StatusBadge status={company.approvalStatus} />
+              </div>
 
-        {!loading &&
-          companies.map((company) => (
-            <section key={company._id}>
-              <h2>{company.name}</h2>
+              <div className="list-item-meta">
+                <span>Recruiter: {company.createdBy?.name || "Unknown"}</span>
+                <span>Email: {company.createdBy?.email || "Unknown"}</span>
+              </div>
 
-              <p>
-                Recruiter:{" "}
-                {company.createdBy?.name ||
-                  "Unknown"}
-              </p>
+              {company.approvalStatus === "PENDING" && (
+                <div className="list-item-footer">
+                  <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      disabled={actionLoading}
+                      onClick={() => handleApproval(company._id, "APPROVED")}
+                    >
+                      Approve
+                    </button>
 
-              <p>
-                Email:{" "}
-                {company.createdBy?.email ||
-                  "Unknown"}
-              </p>
-
-              <p>
-                Status: {company.approvalStatus}
-              </p>
-
-              {company.approvalStatus ===
-                "PENDING" && (
-                <div>
-                  <button
-                    type="button"
-                    disabled={actionLoading}
-                    onClick={() =>
-                      handleApproval(
-                        company._id,
-                        "APPROVED"
-                      )
-                    }
-                  >
-                    Approve
-                  </button>
-
-                  {" "}
-
-                  <button
-                    type="button"
-                    disabled={actionLoading}
-                    onClick={() =>
-                      handleApproval(
-                        company._id,
-                        "REJECTED"
-                      )
-                    }
-                  >
-                    Reject
-                  </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      disabled={actionLoading}
+                      onClick={() => handleApproval(company._id, "REJECTED")}
+                    >
+                      Reject
+                    </button>
+                  </div>
                 </div>
               )}
-
-              <hr />
             </section>
           ))}
-      </main>
-    </div>
+        </div>
+      )}
+    </DashboardLayout>
   );
 };
 

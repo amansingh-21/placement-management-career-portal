@@ -4,58 +4,50 @@ const EligibilityResult = ({ result }) => {
   }
 
   return (
-    <section>
-      <h2>Eligibility Result</h2>
+    <div className="card" style={{ marginTop: "var(--space-5)" }}>
+      <div className="list-item-header">
+        <h3>Eligibility Result</h3>
 
-      <p>
-        <strong>
-          {result.eligible
-            ? "Eligible"
-            : "Not Eligible"}
-        </strong>
-      </p>
+        <span className={`badge ${result.eligible ? "badge-success" : "badge-danger"}`}>
+          {result.eligible ? "Eligible" : "Not Eligible"}
+        </span>
+      </div>
 
       {result.checks?.length > 0 && (
-        <div>
-          <h3>Eligibility Checks</h3>
+        <div style={{ marginTop: "var(--space-4)" }}>
+          {result.checks.map((check, index) => (
+            <div className="eligibility-check" key={index}>
+              <span className={`eligibility-check-icon ${check.passed ? "pass" : "fail"}`}>
+                {check.passed ? "✓" : "✕"}
+              </span>
 
-          {result.checks.map(
-            (check, index) => (
-              <div key={index}>
-                <p>
-                  <strong>
-                    {check.passed
-                      ? "✓"
-                      : "✗"}{" "}
-                    {check.name}
-                  </strong>
+              <div>
+                <p style={{ fontWeight: 600, color: "var(--text-primary)", marginBottom: 2 }}>
+                  {check.name}
                 </p>
-
-                <p>
-                  {check.message}
-                </p>
+                <p style={{ fontSize: 13 }}>{check.message}</p>
               </div>
-            )
-          )}
+            </div>
+          ))}
         </div>
       )}
 
       {result.reasons?.length > 0 && (
-        <div>
-          <h3>Reasons</h3>
+        <div style={{ marginTop: "var(--space-4)" }}>
+          <p className="field-label" style={{ marginBottom: "var(--space-2)" }}>
+            Reasons
+          </p>
 
-          <ul>
-            {result.reasons.map(
-              (reason, index) => (
-                <li key={index}>
-                  {reason}
-                </li>
-              )
-            )}
+          <ul style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+            {result.reasons.map((reason, index) => (
+              <li key={index} style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+                • {reason}
+              </li>
+            ))}
           </ul>
         </div>
       )}
-    </section>
+    </div>
   );
 };
 

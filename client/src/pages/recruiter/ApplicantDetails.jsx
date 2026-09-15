@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import Navbar from "../../components/Navbar.jsx";
+import DashboardLayout from "../../components/DashboardLayout.jsx";
+import Loader from "../../components/Loader.jsx";
+import ErrorMessage from "../../components/ErrorMessage.jsx";
+import StatusBadge from "../../components/StatusBadge.jsx";
 
 import {
   getRecruiterApplications,
@@ -11,16 +14,13 @@ import {
 const ApplicantDetails = () => {
   const { id } = useParams();
 
-  const [application, setApplication] =
-    useState(null);
+  const [application, setApplication] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [statusError, setStatusError] =
-    useState("");
+  const [statusError, setStatusError] = useState("");
 
-  const [statusLoading, setStatusLoading] =
-    useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   useEffect(() => {
     const fetchApplication = async () => {
@@ -28,12 +28,9 @@ const ApplicantDetails = () => {
         setLoading(true);
         setError("");
 
-        const applications =
-          await getRecruiterApplications();
+        const applications = await getRecruiterApplications();
 
-        const found = applications.find(
-          (item) => item._id === id
-        );
+        const found = applications.find((item) => item._id === id);
 
         if (!found) {
           setError("Applicant not found.");
@@ -43,8 +40,7 @@ const ApplicantDetails = () => {
         setApplication(found);
       } catch (error) {
         setError(
-          error.response?.data?.message ||
-            "Unable to load applicant."
+          error.response?.data?.message || "Unable to load applicant."
         );
       } finally {
         setLoading(false);
@@ -59,11 +55,7 @@ const ApplicantDetails = () => {
       setStatusLoading(true);
       setStatusError("");
 
-      const updated =
-        await updateApplicationStatus(
-          id,
-          status
-        );
+      const updated = await updateApplicationStatus(id, status);
 
       setApplication((current) => ({
         ...current,
@@ -71,8 +63,7 @@ const ApplicantDetails = () => {
       }));
     } catch (error) {
       setStatusError(
-        error.response?.data?.message ||
-          "Unable to update application status."
+        error.response?.data?.message || "Unable to update application status."
       );
     } finally {
       setStatusLoading(false);
@@ -81,31 +72,21 @@ const ApplicantDetails = () => {
 
   if (loading) {
     return (
-      <div>
-        <Navbar />
-
-        <main>
-          <p>Loading applicant...</p>
-        </main>
-      </div>
+      <DashboardLayout>
+        <Loader message="Loading applicant..." />
+      </DashboardLayout>
     );
   }
 
   if (error || !application) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout>
+        <Link to="/recruiter/applicants" className="back-link">
+          ← Back to Applicants
+        </Link>
 
-        <main>
-          <Link to="/recruiter/applicants">
-            ← Back to Applicants
-          </Link>
-
-          <p>
-            {error || "Applicant not found."}
-          </p>
-        </main>
-      </div>
+        <ErrorMessage message={error || "Applicant not found."} />
+      </DashboardLayout>
     );
   }
 
@@ -121,150 +102,103 @@ const ApplicantDetails = () => {
     WITHDRAWN: [],
   };
 
-  const nextStatuses =
-    statusOptions[application.status] || [];
+  const nextStatuses = statusOptions[application.status] || [];
 
   return (
-    <div>
-      <Navbar />
+    <DashboardLayout>
+      <Link to="/recruiter/applicants" className="back-link">
+        ← Back to Applicants
+      </Link>
 
-      <main>
-        <Link to="/recruiter/applicants">
-          ← Back to Applicants
-        </Link>
+      <div className="page-header page-header-row">
+        <div>
+          <h1>{student?.name || student?.userId?.name || "Student"}</h1>
+          <p>{student?.email || student?.userId?.email || "Not available"}</p>
+        </div>
 
-        <h1>Applicant Details</h1>
+        <StatusBadge status={application.status} />
+      </div>
 
-        <h2>
-          {student?.name ||
-            student?.userId?.name ||
-            "Student"}
-        </h2>
+      <div className="card section">
+        <h2 className="section-title">Job</h2>
 
-        <p>
-          Email:{" "}
-          {student?.email ||
-            student?.userId?.email ||
-            "Not available"}
-        </p>
-
-        <h2>Job</h2>
-
-        <p>
-          Title:{" "}
-          {job?.title || "Job unavailable"}
-        </p>
-
-        <p>
-          Company:{" "}
-          {job?.companyId?.name ||
-            "Unknown"}
-        </p>
-
-        <p>
-          Location:{" "}
-          {job?.location ||
-            "Not specified"}
-        </p>
-
-        <p>
-          Salary: ₹
-          {job?.salary ?? "Not specified"}
-        </p>
-
-        <h2>Current Status</h2>
-
-        <p>
-          <strong>
-            {application.status}
-          </strong>
-        </p>
-
-        {nextStatuses.length > 0 && (
+        <div className="detail-grid" style={{ marginTop: 0 }}>
           <div>
-            <h2>Update Status</h2>
+            <p className="detail-label">Title</p>
+            <p className="detail-value">{job?.title || "Job unavailable"}</p>
+          </div>
 
+          <div>
+            <p className="detail-label">Company</p>
+            <p className="detail-value">{job?.companyId?.name || "Unknown"}</p>
+          </div>
+
+          <div>
+            <p className="detail-label">Location</p>
+            <p className="detail-value">{job?.location || "Not specified"}</p>
+          </div>
+
+          <div>
+            <p className="detail-label">Salary</p>
+            <p className="detail-value">₹{job?.salary ?? "Not specified"}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="card section">
+        <h2 className="section-title">Update Status</h2>
+
+        <ErrorMessage message={statusError} />
+
+        {nextStatuses.length > 0 ? (
+          <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
             {nextStatuses.map((status) => (
               <button
                 key={status}
                 type="button"
-                onClick={() =>
-                  handleStatusChange(status)
-                }
+                className={status === "REJECTED" ? "btn btn-outline" : "btn btn-primary"}
+                onClick={() => handleStatusChange(status)}
                 disabled={statusLoading}
               >
-                {statusLoading
-                  ? "Updating..."
-                  : `Mark as ${status}`}
+                {statusLoading && <span className="btn-spinner" />}
+                {statusLoading ? "Updating..." : `Mark as ${status}`}
               </button>
             ))}
           </div>
+        ) : (
+          <p>No further status transitions are available.</p>
         )}
+      </div>
 
-        {nextStatuses.length === 0 && (
-          <p>
-            No further status transitions are
-            available.
-          </p>
-        )}
-
-        {statusError && (
-          <p>{statusError}</p>
-        )}
-
-        <h2>Application Timeline</h2>
+      <div className="card section">
+        <h2 className="section-title">Application Timeline</h2>
 
         {application.statusHistory?.length > 0 ? (
-          <div>
-            {application.statusHistory.map(
-              (entry, index) => {
-                const changedBy =
-                  entry.changedBy;
+          <div className="timeline">
+            {application.statusHistory.map((entry, index) => {
+              const changedBy = entry.changedBy;
 
-                return (
-                  <div
-                    key={
-                      entry._id ||
-                      `${entry.status}-${index}`
-                    }
-                  >
-                    <h3>
-                      {entry.status}
-                    </h3>
+              return (
+                <div className="timeline-item" key={entry._id || `${entry.status}-${index}`}>
+                  <h3>{entry.status}</h3>
 
-                    <p>
-                      Date:{" "}
-                      {entry.changedAt
-                        ? new Date(
-                            entry.changedAt
-                          ).toLocaleString()
-                        : "Not available"}
-                    </p>
+                  <p>
+                    Date:{" "}
+                    {entry.changedAt
+                      ? new Date(entry.changedAt).toLocaleString()
+                      : "Not available"}
+                  </p>
 
-                    <p>
-                      Changed By:{" "}
-                      {changedBy?.name ||
-                        changedBy?.email ||
-                        "Unknown"}
-                    </p>
-
-                    {index <
-                      application
-                        .statusHistory
-                        .length -
-                        1 && <hr />}
-                  </div>
-                );
-              }
-            )}
+                  <p>Changed By: {changedBy?.name || changedBy?.email || "Unknown"}</p>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <p>
-            No status history available.
-          </p>
+          <p>No status history available.</p>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

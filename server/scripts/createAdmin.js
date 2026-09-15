@@ -18,11 +18,11 @@ const createAdmin = async () => {
       return;
     }
 
-    const passwordHash = await bcrypt.hash("password123", 10);
+    const passwordHash = await bcrypt.hash("aman21singh", 10);
 
     await User.create({
-      name: "Test Admin",
-      email: "admin1@example.com",
+      name: "Web Admin",
+      email: "admin@example.com",
       passwordHash,
       role: "ADMIN",
     });
